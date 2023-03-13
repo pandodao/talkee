@@ -1,0 +1,13 @@
+DROP TABLE IF EXISTS properties;
+
+DROP TABLE IF EXISTS users;
+
+DROP TABLE IF EXISTS comments;
+
+DROP TABLE IF EXISTS replies;
+
+DROP TABLE IF EXISTS assets;
+
+DROP TABLE IF EXISTS attachments;
+
+DROP TABLE IF EXISTS snapshots;

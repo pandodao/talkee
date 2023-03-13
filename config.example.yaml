@@ -1,0 +1,17 @@
+app_name: "talkee-test"
+db:
+  driver: "postgres"
+  datasource: "user=foobar dbname=talkee host=localhost password=foobar sslmode=disable"
+
+auth:
+  jwt_secret: "112233"
+  mixin_client_secret: ".."
+
+aws:
+  key: ""
+  secret: ""
+  region: ""
+  bucket: ""
+
+sys:
+  attachment_base: "http://.."

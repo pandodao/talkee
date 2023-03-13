@@ -1,0 +1,31 @@
+INSERT INTO snapshots
+(
+  snapshot_id,
+  trace_id,
+  source,
+  transaction_hash,
+  receiver,
+  sender,
+  "type",
+  user_id,
+  opponent_id,
+  asset_id,
+  amount,
+  memo,
+  created_at
+) VALUES (
+  :snapshot_id,
+  :trace_id,
+  :source,
+  :transaction_hash,
+  :receiver,
+  :sender,
+  :type,
+  :user_id,
+  :opponent_id,
+  :asset_id,
+  :amount,
+  :memo,
+  NOW()
+)
+;

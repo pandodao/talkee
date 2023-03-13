@@ -1,0 +1,7 @@
+data/wordset/*.json
+config.yaml
+talkee
+__debug_bin
+keystores
+.vscode
+*.log
