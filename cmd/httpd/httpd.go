@@ -82,6 +82,8 @@ func NewCmdHttpd() *cobra.Command {
 			replyz := replyServ.New(replys, comments, replyServ.Config{})
 			assetz := assetServ.New(client, assets)
 
+			s = s.Setup(userz, []string{client.ClientID})
+
 			mux := chi.NewMux()
 			mux.Use(middleware.Recoverer)
 			mux.Use(middleware.StripSlashes)

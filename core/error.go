@@ -11,6 +11,7 @@ var (
 	ErrInvalidCommentID        = errors.New("invalid comment id")
 	ErrInvalidUserID           = errors.New("invalid user id")
 	ErrInvalidAssetID          = errors.New("invalid asset id")
+	ErrInvalidJwtTokenIssuer   = errors.New("invalid jwt token issuer")
 	ErrNoRecord                = errors.New("no record")
 	ErrSiteLimitReached        = errors.New("site limit reached")
 	ErrInvalidAuthParams       = errors.New("invalid auth params")

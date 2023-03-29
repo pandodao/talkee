@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 	"talkee/core"
 	"talkee/handler/render"
@@ -40,7 +41,7 @@ func Login(s *session.Session, userz core.UserService) http.HandlerFunc {
 		case "mixin_token":
 			{
 				mixinToken := body.MixinToken
-				user, token, err := s.LoginWithMixin(ctx, userz, mixinToken, "", body.Lang)
+				user, token, err := s.LoginWithMixin(ctx, mixinToken, "", body.Lang)
 				if err != nil {
 					render.Error(w, http.StatusUnauthorized, err)
 					return
@@ -69,6 +70,17 @@ func Login(s *session.Session, userz core.UserService) http.HandlerFunc {
 					return
 				}
 
+				parsedUrl, err := url.Parse(message.URI)
+				if err != nil {
+					render.Error(w, http.StatusBadRequest, core.ErrBadMvmLoginMessage)
+				}
+
+				parsedOrigin := strings.ToLower(parsedUrl.Scheme + "://" + parsedUrl.Host)
+				origin := strings.ToLower(r.Header.Get("Origin"))
+				if parsedOrigin != origin {
+					render.Error(w, http.StatusBadRequest, core.ErrBadMvmLoginMessage)
+				}
+
 				if err := eip4361.Verify(message, body.Signature); err != nil {
 					render.Error(w, http.StatusUnauthorized, core.ErrBadMvmLoginSignature)
 					return
@@ -76,7 +88,7 @@ func Login(s *session.Session, userz core.UserService) http.HandlerFunc {
 
 				pubkey := message.Address
 
-				user, token, err := s.LoginWithMixin(ctx, userz, "", pubkey, body.Lang)
+				user, token, err := s.LoginWithMixin(ctx, "", pubkey, body.Lang)
 				if err != nil {
 					render.Error(w, http.StatusUnauthorized, err)
 					return
