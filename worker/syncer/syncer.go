@@ -121,7 +121,7 @@ func (w *Worker) run(ctx context.Context) error {
 	}
 
 	if newOffset.After(offset) {
-		if err := w.propertys.Set(ctx, snapshotCheckpoint, newOffset.Format(time.RFC3339Nano)); err != nil {
+		if _, err := w.propertys.Set(ctx, snapshotCheckpoint, newOffset.Format(time.RFC3339Nano)); err != nil {
 			log.WithError(err).Errorln("properties.Set")
 			return err
 		}

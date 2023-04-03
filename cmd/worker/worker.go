@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"talkee/config"
+	"talkee/core"
 	"talkee/handler/hc"
 	assetServ "talkee/service/asset"
 	commentServ "talkee/service/comment"
@@ -22,7 +23,6 @@ import (
 	"talkee/store/property"
 	"talkee/store/reward"
 	"talkee/store/snapshot"
-	"talkee/store/user"
 	"talkee/worker"
 	"talkee/worker/arweavesyncer"
 	"talkee/worker/reward_processer"
@@ -82,8 +82,9 @@ func NewCmdWorker() *cobra.Command {
 			propertys := property.New(h)
 
 			assets := asset.New(h)
-			snapshots := snapshot.New(conn)
-			users := user.New(conn)
+			snapshots := snapshot.New(h)
+			var users core.UserStore
+			// users := user.New(conn)
 			comments := comment.New(conn)
 			rewards := reward.New(conn)
 			favourites := favourite.New(h)

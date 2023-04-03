@@ -64,10 +64,10 @@ func UpdateSite(sites core.SiteStore) http.HandlerFunc {
 			return
 		}
 
-		err = sites.UpdateSite(ctx, site.ID, map[string]interface{}{
-			"name":        body.Name,
-			"origins":     []string{body.Origin},
-			"use_arweave": body.UseArweave,
+		err = sites.UpdateSite(ctx, site.ID, &core.Site{
+			Name:       body.Name,
+			Origins:    []string{body.Origin},
+			UseArweave: body.UseArweave,
 		})
 		if err != nil {
 			render.Error(w, http.StatusInternalServerError, err)

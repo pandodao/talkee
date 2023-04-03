@@ -16,6 +16,7 @@ import (
 	replyServ "talkee/service/reply"
 	userServ "talkee/service/user"
 	"talkee/session"
+	"talkee/store"
 	"talkee/store/comment"
 	"talkee/store/property"
 	"talkee/store/reply"
@@ -39,8 +40,9 @@ func NewCmdWss() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
 			ctx := cmd.Context()
+			cfg := config.C()
 
-			conn, err := sqlx.Connect(config.C().DB.Driver, config.C().DB.Datasource)
+			conn, err := sqlx.Connect(cfg.DB.Driver, cfg.DB.Datasource)
 			if err != nil {
 				log.Fatalln("connect to database failed", err)
 			}
@@ -48,7 +50,10 @@ func NewCmdWss() *cobra.Command {
 
 			defer conn.Close()
 
-			cfg := config.C()
+			h := store.MustInit(store.Config{
+				Driver: cfg.DB.Driver,
+				DSN:    cfg.DB.Datasource,
+			})
 
 			s := session.From(ctx)
 			s.WithJWTSecret([]byte(config.C().Auth.JwtSecret))
@@ -58,10 +63,11 @@ func NewCmdWss() *cobra.Command {
 				return err
 			}
 
-			propertys := property.New(conn)
-			users := user.New(conn)
+			// var users core.UserStore
+			propertys := property.New(h)
+			users := user.New(h)
 			comments := comment.New(conn)
-			sites := site.New(conn)
+			sites := site.New(h)
 			replys := reply.New(conn)
 
 			userz := userServ.New(client, users, userServ.Config{

@@ -97,12 +97,12 @@ type propertyDo struct{ gen.DO }
 type IPropertyDo interface {
 	WithContext(ctx context.Context) IPropertyDo
 
-	Get(ctx context.Context, key string) (result string, err error)
+	Get(ctx context.Context, key string) (result core.PropertyValue, err error)
 	Set(ctx context.Context, key string, value interface{}) (result int64, err error)
 }
 
 // SELECT value FROM @@table WHERE key=@key
-func (p propertyDo) Get(ctx context.Context, key string) (result string, err error) {
+func (p propertyDo) Get(ctx context.Context, key string) (result core.PropertyValue, err error) {
 	var params []interface{}
 
 	var generateSQL strings.Builder

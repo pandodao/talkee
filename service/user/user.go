@@ -95,7 +95,7 @@ func (s *UserService) LoginWithMixin(ctx context.Context, token, pubkey, lang st
 
 	// create
 	if err == sql.ErrNoRows {
-		newUserId, err := s.users.Create(ctx, user)
+		newUserId, err := s.users.CreateUser(ctx, user)
 		if err != nil {
 			fmt.Printf("err users.Create: %v\n", err)
 			return nil, err
@@ -113,23 +113,13 @@ func (s *UserService) LoginWithMixin(ctx context.Context, token, pubkey, lang st
 	}
 
 	// update
-	payload := map[string]interface{}{
-		"full_name":  user.FullName,
-		"avatar_url": user.AvatarURL,
-		"lang":       lang,
-	}
-
 	if len(user.Lang) >= 2 {
 		user.Lang = strings.ToLower(lang[:2])
 	} else {
 		user.Lang = "en"
 	}
 
-	if len(user.Lang) != 0 {
-		payload["lang"] = user.Lang
-	}
-
-	if err := s.users.UpdateBasicInfo(ctx, existing.ID, payload); err != nil {
+	if err := s.users.UpdateBasicInfo(ctx, existing.ID, user); err != nil {
 		fmt.Printf("err users.Updates: %v\n", err)
 		return nil, err
 	}

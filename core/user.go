@@ -13,25 +13,65 @@ const (
 
 type (
 	User struct {
-		ID                  uint64 `db:"id" json:"id"`
-		MixinUserID         string `db:"mixin_user_id" json:"mixin_user_id"`
-		MixinIdentityNumber string `db:"mixin_identity_number" json:"mixin_identity_number"`
-		FullName            string `db:"full_name" json:"full_name"`
-		AvatarURL           string `db:"avatar_url" json:"avatar_url"`
-		MvmPublicKey        string `db:"mvm_public_key" json:"mvm_public_key"`
-		Lang                string `db:"lang" json:"-"`
+		ID                  uint64 `json:"id"`
+		MixinUserID         string `json:"mixin_user_id"`
+		MixinIdentityNumber string `json:"mixin_identity_number"`
+		FullName            string `json:"full_name"`
+		AvatarURL           string `json:"avatar_url"`
+		MvmPublicKey        string `json:"mvm_public_key"`
+		Lang                string `json:"-"`
 
-		CreatedAt *time.Time `db:"created_at" json:"created_at"`
-		UpdatedAt *time.Time `db:"updated_at" json:"-"`
-		DeletedAt *time.Time `db:"deleted_at" json:"-"`
+		CreatedAt *time.Time `json:"created_at"`
+		UpdatedAt *time.Time `json:"-"`
+		DeletedAt *time.Time `json:"-"`
 	}
 
 	UserStore interface {
+		// SELECT
+		// 	*
+		// FROM @@table
+		// WHERE id = @id AND deleted_at IS NULL;
 		GetUser(ctx context.Context, id uint64) (*User, error)
+
+		// SELECT
+		// 	*
+		// FROM @@table
+		// WHERE id in (@ids) AND deleted_at IS NULL;
 		GetUserByIDs(ctx context.Context, ids []uint64) ([]*User, error)
+
+		// SELECT
+		// 	*
+		// FROM @@table
+		// WHERE mixin_user_id = @mixinUserID;
 		GetUserByMixinID(ctx context.Context, mixinUserID string) (*User, error)
-		Create(ctx context.Context, user *User) (uint64, error)
-		UpdateBasicInfo(ctx context.Context, id uint64, data map[string]interface{}) error
+
+		// INSERT INTO users
+		// 	(
+		// 		"full_name", "avatar_url",
+		// 		"mixin_user_id", "mixin_identity_number",
+		// 		"lang", "mvm_public_key",
+		// 		"created_at", "updated_at"
+		// 	)
+		// VALUES
+		// 	(
+		// 		@user.FullName, @user.AvatarURL,
+		// 		@user.MixinUserID, @user.MixinIdentityNumber,
+		// 		@user.Lang, @user.MvmPublicKey,
+		// 		NOW(), NOW()
+		// 	)
+		// RETURNING id;
+		CreateUser(ctx context.Context, user *User) (uint64, error)
+
+		// UPDATE @@table
+		// 	{{set}}
+		// 	  "name"=@user.FullName,
+		// 	  "avatar_url"=@user.AvatarURL,
+		// 	  "lang"=@user.Lang,
+		// 		"updated_at"=NOW()
+		// 	{{end}}
+		// WHERE
+		// 	"id" = @id AND "deleted_at" IS NULL;
+		UpdateBasicInfo(ctx context.Context, id uint64, user *User) error
 	}
 	UserService interface {
 		LoginWithMixin(ctx context.Context, token, pubkey, lang string) (*User, error)

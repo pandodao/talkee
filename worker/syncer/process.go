@@ -54,7 +54,7 @@ func (w *Worker) PersistentSnapshot(ctx context.Context, snapshot *core.Snapshot
 		log.Info("deposit transaction accepted")
 	}
 
-	if err := w.snapshots.SetSnapshots(ctx, []*core.Snapshot{snapshot}); err != nil {
+	if err := w.snapshots.SetSnapshot(ctx, snapshot); err != nil {
 		return err
 	}
 	return nil

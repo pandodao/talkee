@@ -153,7 +153,7 @@ func (w *Worker) updateGlobalSummary(ctx context.Context) error {
 		return err
 	}
 
-	if err := w.propertys.Set(ctx, statGlobalSummary, string(buf)); err != nil {
+	if _, err := w.propertys.Set(ctx, statGlobalSummary, string(buf)); err != nil {
 		log.WithError(err).Errorln("properties.Set")
 		return err
 	}

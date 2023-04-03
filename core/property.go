@@ -17,7 +17,7 @@ type (
 
 	PropertyStore interface {
 		// SELECT value FROM @@table WHERE key=@key
-		Get(ctx context.Context, key string) (string, error)
+		Get(ctx context.Context, key string) (PropertyValue, error)
 		// UPDATE @@table
 		//  {{set}}
 		//    value=@value,

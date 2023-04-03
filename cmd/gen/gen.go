@@ -6,6 +6,8 @@ import (
 	_ "talkee/store/asset"
 	_ "talkee/store/favourite"
 	_ "talkee/store/property"
+	_ "talkee/store/site"
+	_ "talkee/store/snapshot"
 	_ "talkee/store/user"
 
 	"github.com/spf13/cobra"

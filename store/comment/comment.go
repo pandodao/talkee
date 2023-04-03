@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"talkee/core"
 	"talkee/store/reward"
-	"talkee/store/user"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -213,15 +212,15 @@ func (s *store) GetAllCommentsBySiteSlug(ctx context.Context, siteID uint64, slu
 	}
 
 	var users []*core.User
-	query, args, err := sqlx.In(user.StmtGetUserByIDs, userIDs)
-	if err != nil {
-		return nil, err
-	}
+	// query, args, err := sqlx.In(user.StmtGetUserByIDs, userIDs)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	query = s.db.Rebind(query)
-	if err := s.db.Select(&users, query, args...); err != nil {
-		return nil, err
-	}
+	// query = s.db.Rebind(query)
+	// if err := s.db.Select(&users, query, args...); err != nil {
+	// 	return nil, err
+	// }
 
 	for _, c := range comments {
 		for _, u := range users {
@@ -232,7 +231,6 @@ func (s *store) GetAllCommentsBySiteSlug(ctx context.Context, siteID uint64, slu
 	}
 
 	return comments, nil
-
 }
 
 func (s *store) CreateComment(ctx context.Context, userID, siteID uint64, slug, content string) (uint64, error) {

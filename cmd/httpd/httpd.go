@@ -69,10 +69,11 @@ func NewCmdHttpd() *cobra.Command {
 				return err
 			}
 
+			// var users core.UserStore
 			propertys := property.New(h)
-			users := user.New(conn)
+			users := user.New(h)
 			comments := comment.New(conn)
-			sites := site.New(conn)
+			sites := site.New(h)
 			replys := reply.New(conn)
 			assets := asset.New(h)
 			favourites := favourite.New(h)
