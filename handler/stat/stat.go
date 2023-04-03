@@ -23,7 +23,7 @@ func GetGlobal(propertys core.PropertyStore) http.HandlerFunc {
 		}
 
 		stat := make(map[string]interface{})
-		jsonStr := val.String()
+		jsonStr := val
 		jsoniter.Unmarshal([]byte(jsonStr), &stat)
 
 		render.JSON(w, stat)

@@ -9,21 +9,38 @@ import (
 
 type (
 	Asset struct {
-		AssetID   string          `db:"asset_id" json:"asset_id"`
-		Name      string          `db:"name" json:"name"`
-		PriceUSD  decimal.Decimal `db:"price_usd" json:"price_usd"`
-		Symbol    string          `db:"symbol" json:"symbol"`
-		IconURL   string          `db:"icon_url" json:"icon_url"`
-		Order     int64           `db:"order" json:"order"`
-		CreatedAt *time.Time      `db:"created_at" json:"created_at"`
-		UpdatedAt *time.Time      `db:"updated_at" json:"updated_at"`
-		DeletedAt *time.Time      `db:"deleted_at" json:"-"`
+		AssetID   string          `json:"asset_id"`
+		Name      string          `json:"name"`
+		PriceUSD  decimal.Decimal `json:"price_usd"`
+		Symbol    string          `json:"symbol"`
+		IconURL   string          `json:"icon_url"`
+		Order     int64           `json:"order"`
+		CreatedAt *time.Time      `json:"created_at"`
+		UpdatedAt *time.Time      `json:"updated_at"`
+		DeletedAt *time.Time      `json:"-"`
 	}
 
 	AssetStore interface {
+		// SELECT
+		// * FROM @@table
+		// WHERE deleted_at IS NULL;
 		GetAssets(ctx context.Context) ([]*Asset, error)
+
+		// SELECT
+		// * FROM @@table
+		// WEHRE
+		//   asset_id = @assetID AND deleted_at IS NULL;
 		GetAsset(ctx context.Context, assetID string) (*Asset, error)
-		SetAssets(ctx context.Context, assets []*Asset) error
+
+		// INSERT INTO assets ("asset_id", "name", "symbol", "icon_url", "price_usd", "created_at", "updated_at")
+		// VALUES (@asset.AssetID, @asset.Name, @asset.Symbol, @asset.IconURL, @asset.PriceUSD, NOW(), NOW())
+		// ON CONFLICT (asset_id) DO
+		// 	UPDATE SET
+		// 		price_usd=EXCLUDED.price_usd,
+		// 		name=EXCLUDED.name,
+		// 		symbol=EXCLUDED.symbol,
+		// 		icon_url=EXCLUDED.icon_url,
+		// 		updated_at=NOW();
 		SetAsset(ctx context.Context, asset *Asset) error
 	}
 

@@ -11,51 +11,32 @@ const (
 
 type (
 	Comment struct {
-		ID            uint64 `db:"id" json:"id"`
-		UserID        uint64 `db:"user_id" json:"user_id"`
-		SiteID        uint64 `db:"site_id" json:"site_id"`
-		Slug          string `db:"slug" json:"slug"`
-		FavorCount    uint64 `db:"favor_count" json:"favor_count"`
-		ReplyCount    uint64 `db:"reply_count" json:"reply_count"`
-		ArweaveTxHash string `db:"arweave_tx_hash" json:"arweave_tx_hash"`
-		Content       string `db:"content" json:"content"`
+		ID            uint64 `json:"id"`
+		UserID        uint64 `json:"user_id"`
+		SiteID        uint64 `json:"site_id"`
+		Slug          string `json:"slug"`
+		FavorCount    uint64 `json:"favor_count"`
+		ReplyCount    uint64 `json:"reply_count"`
+		ArweaveTxHash string `json:"arweave_tx_hash"`
+		Content       string `json:"content"`
 
-		CreatedAt *time.Time `db:"created_at" json:"created_at"`
-		UpdatedAt *time.Time `db:"updated_at" json:"updated_at"`
-		DeletedAt *time.Time `db:"deleted_at" json:"-"`
+		CreatedAt *time.Time `json:"created_at"`
+		UpdatedAt *time.Time `json:"updated_at"`
+		DeletedAt *time.Time `json:"-"`
 
-		Creator *User   `db:"-" json:"creator"`
-		Reward  *Reward `db:"-" json:"reward"`
-		FavID   uint64  `db:"-" json:"fav_id"`
+		Creator *User   `gorm:"-" json:"creator"`
+		Reward  *Reward `gorm:"-" json:"reward"`
+		FavID   uint64  `gorm:"-" json:"fav_id"`
 	}
 
 	CommentChian struct {
 		Slug      string     `json:"slug"`
 		Content   string     `json:"content"`
-		CreatedAt *time.Time `db:"created_at" json:"created_at"`
+		CreatedAt *time.Time `json:"created_at"`
 
 		MixinUserID         string `json:"mixin_user_id"`
 		MixinIdentityNumber string `'json:"mixin_identity_number"`
 		FullName            string `json:"full_name"`
-	}
-
-	CommentFavourite struct {
-		ID        uint64 `db:"id" json:"id"`
-		UserID    uint64 `db:"user_id" json:"user_id"`
-		CommentID uint64 `db:"comment_id" json:"comment_id"`
-
-		CreatedAt *time.Time `db:"created_at" json:"created_at"`
-		UpdatedAt *time.Time `db:"updated_at" json:"updated_at"`
-		DeletedAt *time.Time `db:"deleted_at" json:"-"`
-
-		Creator *User   `db:"-" json:"creator"`
-		Reward  *Reward `db:"-" json:"reward"`
-	}
-
-	CommentFavouriteStore interface {
-		FindAllCommentFavourites(ctx context.Context, commentID uint64) ([]*CommentFavourite, error)
-		FindUserCommentFavourites(ctx context.Context, userID uint64, commentIDs ...uint64) ([]*CommentFavourite, error)
-		CountAllFavourites(ctx context.Context) (uint64, error)
 	}
 
 	CommentStore interface {

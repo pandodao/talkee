@@ -10,14 +10,13 @@ import (
 	"talkee/config"
 	"talkee/handler/hc"
 	assetServ "talkee/service/asset"
-	attServ "talkee/service/attachment"
 	commentServ "talkee/service/comment"
 	rewardServ "talkee/service/reward"
 	snapshotServ "talkee/service/snapshot"
 	"talkee/session"
+	"talkee/store"
 
 	"talkee/store/asset"
-	"talkee/store/attachment"
 	"talkee/store/comment"
 	"talkee/store/favourite"
 	"talkee/store/property"
@@ -26,7 +25,6 @@ import (
 	"talkee/store/user"
 	"talkee/worker"
 	"talkee/worker/arweavesyncer"
-	attProcesser "talkee/worker/attachment_processer"
 	"talkee/worker/reward_processer"
 	"talkee/worker/reward_task_processer"
 	"talkee/worker/syncer"
@@ -49,8 +47,9 @@ func NewCmdWorker() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
 			ctx := cmd.Context()
+			cfg := config.C()
 
-			conn, err := sqlx.Connect(config.C().DB.Driver, config.C().DB.Datasource)
+			conn, err := sqlx.Connect(cfg.DB.Driver, cfg.DB.Datasource)
 			if err != nil {
 				log.Fatalln("connect to database failed", err)
 			}
@@ -58,7 +57,10 @@ func NewCmdWorker() *cobra.Command {
 			conn.SetConnMaxLifetime(time.Hour)
 			defer conn.Close()
 
-			cfg := config.C()
+			h := store.MustInit(store.Config{
+				Driver: cfg.DB.Driver,
+				DSN:    cfg.DB.Datasource,
+			})
 
 			s := session.From(ctx)
 
@@ -77,29 +79,21 @@ func NewCmdWorker() *cobra.Command {
 				return err
 			}
 
-			propertys := property.New(conn)
+			propertys := property.New(h)
 
-			attachments := attachment.New(conn)
-			assets := asset.New(conn)
+			assets := asset.New(h)
 			snapshots := snapshot.New(conn)
 			users := user.New(conn)
 			comments := comment.New(conn)
 			rewards := reward.New(conn)
-			favors := favourite.New(conn)
+			favourites := favourite.New(h)
 			commentz := commentServ.New(arWallet, comments, commentServ.Config{
 				AppName: cfg.AppName,
 			})
 
 			rewardServCfg := rewardServ.Config{}
 			rewardServCfg.Pin, _ = s.GetPin()
-			rewardz := rewardServ.New(rewards, rewards, rewards, favors, comments, client, rewardServCfg)
-
-			attachmentz := attServ.New(attServ.Config{
-				AwsKey:    cfg.Aws.Key,
-				AwsSecret: cfg.Aws.Secret,
-				AwsRegion: cfg.Aws.Region,
-				AwsBucket: cfg.Aws.Bucket,
-			}, attachments)
+			rewardz := rewardServ.New(rewards, rewards, rewards, favourites, comments, client, rewardServCfg)
 
 			assetz := assetServ.New(client, assets)
 			snapshotz := snapshotServ.New(client)
@@ -114,11 +108,8 @@ func NewCmdWorker() *cobra.Command {
 				// arweaver syncer
 				arweavesyncer.New(commentz),
 
-				// attachment processer
-				attProcesser.New(attachmentz),
-
 				// timer
-				timer.New(timer.Config{}, propertys, comments, favors, rewards, assets, assetz),
+				timer.New(timer.Config{}, propertys, comments, favourites, rewards, assets, assetz),
 
 				// syncer
 				syncer.New(syncer.Config{

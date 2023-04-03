@@ -16,6 +16,7 @@ import (
 	replyServ "talkee/service/reply"
 	userServ "talkee/service/user"
 	"talkee/session"
+	"talkee/store"
 	"talkee/store/asset"
 	"talkee/store/comment"
 	"talkee/store/favourite"
@@ -41,16 +42,19 @@ func NewCmdHttpd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
 			ctx := cmd.Context()
-
-			conn, err := sqlx.Connect(config.C().DB.Driver, config.C().DB.Datasource)
+			cfg := config.C()
+			conn, err := sqlx.Connect(cfg.DB.Driver, cfg.DB.Datasource)
 			if err != nil {
 				log.Fatalln("connect to database failed", err)
 			}
 			conn.SetMaxIdleConns(2)
 
-			defer conn.Close()
+			h := store.MustInit(store.Config{
+				Driver: cfg.DB.Driver,
+				DSN:    cfg.DB.Datasource,
+			})
 
-			cfg := config.C()
+			defer conn.Close()
 
 			s := session.From(ctx)
 			s.WithJWTSecret([]byte(config.C().Auth.JwtSecret))
@@ -65,13 +69,13 @@ func NewCmdHttpd() *cobra.Command {
 				return err
 			}
 
-			propertys := property.New(conn)
+			propertys := property.New(h)
 			users := user.New(conn)
 			comments := comment.New(conn)
 			sites := site.New(conn)
 			replys := reply.New(conn)
-			assets := asset.New(conn)
-			favourites := favourite.New(conn)
+			assets := asset.New(h)
+			favourites := favourite.New(h)
 
 			userz := userServ.New(client, users, userServ.Config{
 				MixinClientSecret: cfg.Auth.MixinClientSecret,

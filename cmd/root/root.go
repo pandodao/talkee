@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"talkee/cmd/echo"
+	"talkee/cmd/gen"
 	"talkee/cmd/httpd"
 	"talkee/cmd/migrate"
 	"talkee/cmd/worker"
@@ -103,6 +104,7 @@ func NewCmdRoot(version string) *cobra.Command {
 	cmd.AddCommand(echo.NewCmdEcho())
 	cmd.AddCommand(migrate.NewCmdMigrate())
 	cmd.AddCommand(worker.NewCmdWorker())
+	cmd.AddCommand(gen.NewCmdGen())
 
 	return cmd
 }

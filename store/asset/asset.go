@@ -2,109 +2,56 @@ package asset
 
 import (
 	"context"
-	_ "embed"
 	"talkee/core"
+	"talkee/store"
+	"talkee/store/asset/dao"
 
-	"github.com/jmoiron/sqlx"
+	"gorm.io/gen"
 )
 
-func New(db *sqlx.DB) core.AssetStore {
-	return &store{
-		db: db,
+func init() {
+	store.RegistGenerate(
+		gen.Config{
+			OutPath: "store/asset/dao",
+		},
+		func(g *gen.Generator) {
+			g.ApplyInterface(func(core.AssetStore) {}, core.Asset{})
+		},
+	)
+}
+
+func New(h *store.Handler) core.AssetStore {
+	var q *dao.Query
+	if !dao.Q.Available() {
+		dao.SetDefault(h.DB)
+		q = dao.Q
+	} else {
+		q = dao.Use(h.DB)
+	}
+
+	v, ok := interface{}(q.Asset).(core.AssetStore)
+	if !ok {
+		panic("dao.Asset is not core.AssetStore")
+	}
+
+	return &storeImpl{
+		AssetStore: v,
 	}
 }
 
-type store struct {
-	db *sqlx.DB
+type storeImpl struct {
+	core.AssetStore
 }
 
-func (s *store) GetAssets(ctx context.Context) ([]*core.Asset, error) {
-	rows, err := s.db.QueryxContext(ctx, stmtGetAll, nil...)
-	if err != nil {
-		return nil, err
-	}
-
-	as, err := scanRows(rows)
-	if err != nil {
-		return nil, err
-	}
-
-	return as, nil
-}
-
-func (s *store) GetAsset(ctx context.Context, assetID string) (*core.Asset, error) {
-	query, args, err := s.db.BindNamed(stmtGetByID, map[string]interface{}{
-		"asset_id": assetID,
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	rows, err := s.db.QueryxContext(ctx, query, args...)
-	if err != nil {
-		return nil, err
-	}
-
-	asset := &core.Asset{}
-
-	if err := scanRow(rows, asset); err != nil {
-		return nil, err
-	}
-
-	return asset, nil
-}
-
-func (s *store) SetAssets(ctx context.Context, assets []*core.Asset) error {
-
-	tx := s.db.MustBegin()
-	for _, asset := range assets {
-		query, args, err := s.db.BindNamed(stmtUpdate, map[string]interface{}{
-			"name":      asset.Name,
-			"symbol":    asset.Symbol,
-			"icon_url":  asset.IconURL,
-			"price_usd": asset.PriceUSD,
-			"asset_id":  asset.AssetID,
-		})
-
-		if err != nil {
-			return err
+func (s *storeImpl) SetAssets(ctx context.Context, assets []*core.Asset) error {
+	if err := store.Transaction(func(tx *store.Handler) error {
+		assetStore := New(tx)
+		for _, asset := range assets {
+			assetStore.SetAsset(ctx, asset)
 		}
-
-		tx.MustExecContext(ctx, query, args...)
-	}
-
-	if err := tx.Commit(); err != nil {
+		return nil
+	}); err != nil {
 		return err
 	}
-
 	return nil
 }
-
-func (s *store) SetAsset(ctx context.Context, asset *core.Asset) error {
-
-	query, args, err := s.db.BindNamed(stmtUpdate, map[string]interface{}{
-		"name":      asset.Name,
-		"symbol":    asset.Symbol,
-		"icon_url":  asset.IconURL,
-		"price_usd": asset.PriceUSD,
-		"asset_id":  asset.AssetID,
-	})
-
-	if err != nil {
-		return err
-	}
-
-	s.db.MustExecContext(ctx, query, args...)
-
-	return nil
-}
-
-//go:embed sql/get_all.sql
-var stmtGetAll string
-
-//go:embed sql/get_by_id.sql
-var stmtGetByID string
-
-//go:embed sql/update.sql
-var stmtUpdate string

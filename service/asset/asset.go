@@ -3,6 +3,8 @@ package asset
 import (
 	"context"
 	"talkee/core"
+	"talkee/store"
+	"talkee/store/asset"
 	"time"
 
 	"github.com/fox-one/mixin-sdk-go"
@@ -35,7 +37,16 @@ func (s *assetService) UpdateAssets(ctx context.Context) error {
 		s.cache.Set(ma.AssetID, *convertAsset(ma), cache.NoExpiration)
 	}
 
-	return s.assets.SetAssets(ctx, convertAssets(newAs))
+	if err := store.Transaction(func(tx *store.Handler) error {
+		assetStore := asset.New(tx)
+		for _, as := range newAs {
+			assetStore.SetAsset(ctx, convertAsset(as))
+		}
+		return nil
+	}); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (s *assetService) GetCachedAssets(ctx context.Context, assetID string) (*core.Asset, error) {

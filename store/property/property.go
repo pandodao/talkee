@@ -1,65 +1,36 @@
 package property
 
 import (
-	"context"
-	_ "embed"
 	"talkee/core"
+	"talkee/store"
+	"talkee/store/property/dao"
 
-	"github.com/jmoiron/sqlx"
+	"gorm.io/gen"
 )
 
-func New(db *sqlx.DB) core.PropertyStore {
-	return &store{
-		db: db,
+func init() {
+	cfg := gen.Config{
+		OutPath: "store/property/dao",
 	}
+	store.RegistGenerate(
+		cfg,
+		func(g *gen.Generator) {
+			g.ApplyInterface(func(core.PropertyStore) {}, core.Property{})
+		},
+	)
 }
 
-type store struct {
-	db *sqlx.DB
+func New(h *store.Handler) core.PropertyStore {
+	dao.SetDefault(h.DB)
+	s := &storeImpl{}
+	v, ok := interface{}(dao.Property).(core.PropertyStore)
+	if !ok {
+		panic("dao.Property is not core.PropertyStore")
+	}
+	s.PropertyStore = v
+	return s
 }
 
-func (s *store) Get(ctx context.Context, key string) (core.PropertyValue, error) {
-	query, args, err := s.db.BindNamed(stmtGet, map[string]interface{}{
-		"key": key,
-	})
-
-	if err != nil {
-		return "", err
-	}
-
-	rows, err := s.db.QueryxContext(ctx, query, args...)
-	if err != nil {
-		return "", err
-	}
-
-	pp := &core.Property{}
-
-	if err := scanRow(rows, pp); err != nil {
-		return "", err
-	}
-
-	return pp.Value, nil
+type storeImpl struct {
+	core.PropertyStore
 }
-
-func (s *store) Set(ctx context.Context, key string, value interface{}) error {
-	query, args, err := s.db.BindNamed(stmtSet, map[string]interface{}{
-		"key":   key,
-		"value": value,
-	})
-
-	if err != nil {
-		return err
-	}
-
-	if _, err = s.db.ExecContext(ctx, query, args...); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-//go:embed sql/get.sql
-var stmtGet string
-
-//go:embed sql/set.sql
-var stmtSet string

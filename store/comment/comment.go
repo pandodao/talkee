@@ -6,7 +6,6 @@ import (
 	_ "embed"
 	"fmt"
 	"talkee/core"
-	"talkee/store/favourite"
 	"talkee/store/reward"
 	"talkee/store/user"
 
@@ -445,7 +444,7 @@ func (s *store) WithFavourites(userID uint, comments ...core.Comment) error {
 	}
 
 	var favs []*core.CommentFavourite
-	query, args, err := sqlx.In(favourite.StmtGetUserCommentFavouriteIDs, cmtIDs, userID)
+	query, args, err := sqlx.In("", cmtIDs, userID)
 	if err != nil {
 		return err
 	}
