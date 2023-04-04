@@ -20,6 +20,7 @@ import (
 	"talkee/store/comment"
 	"talkee/store/property"
 	"talkee/store/reply"
+	"talkee/store/reward"
 	"talkee/store/site"
 	"talkee/store/user"
 
@@ -63,20 +64,20 @@ func NewCmdWss() *cobra.Command {
 				return err
 			}
 
-			// var users core.UserStore
 			propertys := property.New(h)
 			users := user.New(h)
-			comments := comment.New(conn)
+			comments := comment.New(h)
 			sites := site.New(h)
-			replys := reply.New(conn)
+			replys := reply.New(h)
+			rewards := reward.New(h)
 
 			userz := userServ.New(client, users, userServ.Config{
 				MixinClientSecret: cfg.Auth.MixinClientSecret,
 			})
-			commentz := commentServ.New(nil, comments, commentServ.Config{
+			commentz := commentServ.New(nil, comments, rewards, users, commentServ.Config{
 				AppName: cfg.AppName,
 			})
-			replyz := replyServ.New(replys, comments, replyServ.Config{})
+			replyz := replyServ.New(replys, comments, users, replyServ.Config{})
 
 			m := melody.New()
 			m.HandleMessage(auth.HandleWssAuthentication(ctx, m, s, users))

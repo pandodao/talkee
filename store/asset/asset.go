@@ -1,7 +1,6 @@
 package asset
 
 import (
-	"context"
 	"talkee/core"
 	"talkee/store"
 	"talkee/store/asset/dao"
@@ -41,17 +40,4 @@ func New(h *store.Handler) core.AssetStore {
 
 type storeImpl struct {
 	core.AssetStore
-}
-
-func (s *storeImpl) SetAssets(ctx context.Context, assets []*core.Asset) error {
-	if err := store.Transaction(func(tx *store.Handler) error {
-		assetStore := New(tx)
-		for _, asset := range assets {
-			assetStore.SetAsset(ctx, asset)
-		}
-		return nil
-	}); err != nil {
-		return err
-	}
-	return nil
 }

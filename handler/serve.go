@@ -33,7 +33,7 @@ func New(cfg Config,
 	sites core.SiteStore,
 	replys core.ReplyStore,
 	assets core.AssetStore,
-	favourites core.CommentFavouriteStore,
+	favourites core.FavouriteStore,
 
 	userz core.UserService,
 	commentz core.CommentService,
@@ -41,7 +41,7 @@ func New(cfg Config,
 	assetz core.AssetService,
 	melody *melody.Melody,
 ) Server {
-	originCache := cache.New(24*7*time.Hour, 24*7*time.Hour)
+	originCache := cache.New(time.Hour, time.Hour)
 	return Server{cfg: cfg, session: session,
 		propertys:  propertys,
 		comments:   comments,
@@ -74,7 +74,7 @@ type (
 		sites      core.SiteStore
 		replys     core.ReplyStore
 		assets     core.AssetStore
-		favourites core.CommentFavouriteStore
+		favourites core.FavouriteStore
 
 		userz    core.UserService
 		commentz core.CommentService
@@ -130,12 +130,12 @@ func (s Server) HandleRest() http.Handler {
 	})
 
 	r.With(s.SiteRequired()).Route("/comments", func(r chi.Router) {
-		r.Get("/", comment.GetComments(s.favourites, s.comments))
+		r.Get("/", comment.GetComments(s.favourites, s.comments, s.commentz))
 		r.With(s.LoginRequired()).Post("/", comment.AddComment(s.commentz))
-		r.Get("/{commentID}", comment.GetComment(s.favourites, s.comments))
+		r.Get("/{commentID}", comment.GetComment(s.favourites, s.commentz))
 		r.With(s.LoginRequired()).Put("/{commentID}/fav", comment.FavComment(s.commentz, true))
 		r.With(s.LoginRequired()).Put("/{commentID}/unfav", comment.FavComment(s.commentz, false))
-		r.Get("/{commentID}/replies", reply.GetReplies(s.replys))
+		r.Get("/{commentID}/replies", reply.GetReplies(s.replys, s.replyz))
 		r.With(s.LoginRequired()).Post("/{commentID}/replies", reply.AddReply(s.replyz))
 	})
 

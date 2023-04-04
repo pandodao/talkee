@@ -2,18 +2,41 @@ package core
 
 import (
 	"context"
+	"database/sql/driver"
 	"time"
+
+	"github.com/lib/pq"
 )
+
+type SiteOrigins []string
+
+func (s *SiteOrigins) Scan(value interface{}) error {
+	stringArray := pq.StringArray{}
+	err := stringArray.Scan(value)
+	if err != nil {
+		return err
+	}
+	*s = SiteOrigins(stringArray)
+	return nil
+}
+
+func (s SiteOrigins) Value() (driver.Value, error) {
+	stringArray := pq.StringArray(s)
+	if stringArray == nil {
+		return nil, nil
+	}
+	return stringArray.Value()
+}
 
 type (
 	Site struct {
-		ID             uint64   `json:"id"`
-		UserID         uint64   `json:"user_id"`
-		Origins        []string `gorm:"type:text[]" json:"origins"`
-		Origin         string   `json:"origin"`
-		Name           string   `json:"name"`
-		UseArweave     bool     `json:"use_arweave"`
-		RewardStrategy int      `json:"reward_strategy"`
+		ID             uint64      `json:"id"`
+		UserID         uint64      `json:"user_id"`
+		Origins        SiteOrigins `gorm:"type:text[]" json:"origins"`
+		Origin         string      `json:"origin"`
+		Name           string      `json:"name"`
+		UseArweave     bool        `json:"use_arweave"`
+		RewardStrategy int         `json:"reward_strategy"`
 
 		CreatedAt *time.Time `json:"created_at"`
 		UpdatedAt *time.Time `json:"updated_at"`
@@ -34,7 +57,7 @@ type (
 		// 	*
 		// FROM @@table
 		// WHERE
-		// 	"origins" @> (CAST('{}' as text[]) || CAST(@origin as text))
+		//  @origin=ANY("origins")
 		// AND
 		// 	deleted_at IS NULL
 		// LIMIT 1;
@@ -69,7 +92,7 @@ type (
 		// 	)
 		// RETURNING id
 		// ;
-		CreateSite(ctx context.Context, userID uint64, name string, origins []string, useArweave bool) (uint64, error)
+		CreateSite(ctx context.Context, userID uint64, name string, origins SiteOrigins, useArweave bool) (uint64, error)
 
 		// UPDATE @@table
 		// 	{{set}}

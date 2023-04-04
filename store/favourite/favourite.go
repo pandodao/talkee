@@ -14,12 +14,12 @@ func init() {
 			OutPath: "store/favourite/dao",
 		},
 		func(g *gen.Generator) {
-			g.ApplyInterface(func(core.CommentFavouriteStore) {}, core.CommentFavourite{})
+			g.ApplyInterface(func(core.FavouriteStore) {}, core.Favourite{})
 		},
 	)
 }
 
-func New(h *store.Handler) core.CommentFavouriteStore {
+func New(h *store.Handler) core.FavouriteStore {
 	var q *dao.Query
 	if !dao.Q.Available() {
 		dao.SetDefault(h.DB)
@@ -28,16 +28,16 @@ func New(h *store.Handler) core.CommentFavouriteStore {
 		q = dao.Use(h.DB)
 	}
 
-	v, ok := interface{}(q.CommentFavourite).(core.CommentFavouriteStore)
+	v, ok := interface{}(q.Favourite).(core.FavouriteStore)
 	if !ok {
-		panic("dao.CommentFavourite is not core.CommentFavouriteStore")
+		panic("dao.Favourite is not core.FavouriteStore")
 	}
 
 	return &storeImpl{
-		CommentFavouriteStore: v,
+		FavouriteStore: v,
 	}
 }
 
 type storeImpl struct {
-	core.CommentFavouriteStore
+	core.FavouriteStore
 }

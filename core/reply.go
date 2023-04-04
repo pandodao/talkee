@@ -11,26 +11,67 @@ const (
 
 type (
 	Reply struct {
-		ID        uint64 `db:"id" json:"id"`
-		UserID    uint64 `db:"user_id" json:"user_id"`
-		CommentID string `db:"comment_id" json:"comment_id"`
-		Content   string `db:"content" json:"content"`
+		ID        uint64 `json:"id"`
+		UserID    uint64 `json:"user_id"`
+		CommentID string `json:"comment_id"`
+		Content   string `json:"content"`
 
-		CreatedAt *time.Time `db:"created_at" json:"created_at"`
-		UpdatedAt *time.Time `db:"updated_at" json:"updated_at"`
-		DeletedAt *time.Time `db:"deleted_at" json:"-"`
+		CreatedAt *time.Time `json:"created_at"`
+		UpdatedAt *time.Time `json:"updated_at"`
+		DeletedAt *time.Time `json:"-"`
 
-		Creator *User `db:"-" json:"creator"`
+		Creator *User `gorm:"-" json:"creator"`
 	}
 
 	ReplyStore interface {
+		// SELECT
+		// 	*
+		// FROM "replies"
+		// WHERE
+		// 	"replies"."comment_id" = @commentID
+		// 	AND "deleted_at" IS NULL
+		// ORDER BY "replies"."created_at" DESC
+		// OFFSET @offset
+		// LIMIT @limit;
 		GetReplies(ctx context.Context, commentID, offset, limit uint64) ([]*Reply, error)
+
+		// SELECT
+		// 	*
+		// FROM "replies"
+		// WHERE
+		// 	"replies"."id" = @replyID
+		// 	AND "replies"."deleted_at" IS NULL
+		// LIMIT 1;
 		GetReply(ctx context.Context, replyID uint64) (*Reply, error)
+
+		// SELECT
+		// 	COUNT("id")
+		// FROM "replies"
+		// WHERE
+		//  "comment_id" = @commentID
+		// 	AND "deleted_at" IS NULL;
 		CountReplies(ctx context.Context, commentID uint64) (uint64, error)
+
+		// INSERT INTO "replies"
+		// 	(
+		// 		"user_id",
+		// 		"comment_id",
+		// 		"content",
+		// 		"created_at", "updated_at"
+		// 	)
+		// VALUES
+		// 	(
+		// 		@userID,
+		// 		@commentID,
+		// 		@content,
+		// 		NOW(), NOW()
+		// 	)
+		// RETURNING id;
 		CreateReply(ctx context.Context, userID, commentID uint64, content string) (uint64, error)
 	}
 
 	ReplyService interface {
 		CreateReply(ctx context.Context, userID, commentID uint64, content string) (*Reply, error)
+		GetReplies(ctx context.Context, commentID, offset, limit uint64) ([]*Reply, error)
 	}
 )

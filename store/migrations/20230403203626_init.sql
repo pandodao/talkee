@@ -34,8 +34,8 @@ CREATE TABLE "comments" (
 );
 
 CREATE INDEX idx_comment_general ON "comments" USING BTREE("site_id", "slug", "deleted_at");
-CREATE INDEX idx_comment_general_created ON "comments" USING BTREE("site_id", "slug", "created_at");
-CREATE INDEX idx_comment_general_favor ON "comments" USING BTREE("site_id", "slug", "favor_count");
+CREATE INDEX idx_comment_general_created ON "comments" USING BTREE("site_id", "slug", "created_at", "deleted_at");
+CREATE INDEX idx_comment_general_favor ON "comments" USING BTREE("site_id", "slug", "favor_count", "deleted_at");
 
 CREATE TABLE "replies" (
   "id" BIGSERIAL PRIMARY KEY,

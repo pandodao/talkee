@@ -22,6 +22,7 @@ import (
 	"talkee/store/favourite"
 	"talkee/store/property"
 	"talkee/store/reply"
+	"talkee/store/reward"
 	"talkee/store/site"
 	"talkee/store/user"
 
@@ -69,22 +70,22 @@ func NewCmdHttpd() *cobra.Command {
 				return err
 			}
 
-			// var users core.UserStore
 			propertys := property.New(h)
 			users := user.New(h)
-			comments := comment.New(conn)
+			comments := comment.New(h)
 			sites := site.New(h)
-			replys := reply.New(conn)
+			replys := reply.New(h)
 			assets := asset.New(h)
 			favourites := favourite.New(h)
+			rewards := reward.New(h)
 
 			userz := userServ.New(client, users, userServ.Config{
 				MixinClientSecret: cfg.Auth.MixinClientSecret,
 			})
-			commentz := commentServ.New(arWallet, comments, commentServ.Config{
+			commentz := commentServ.New(arWallet, comments, rewards, users, commentServ.Config{
 				AppName: cfg.AppName,
 			})
-			replyz := replyServ.New(replys, comments, replyServ.Config{})
+			replyz := replyServ.New(replys, comments, users, replyServ.Config{})
 			assetz := assetServ.New(client, assets)
 
 			mux := chi.NewMux()

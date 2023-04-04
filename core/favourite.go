@@ -6,7 +6,7 @@ import (
 )
 
 type (
-	CommentFavourite struct {
+	Favourite struct {
 		ID        uint64 `json:"id"`
 		UserID    uint64 `json:"user_id"`
 		CommentID uint64 `json:"comment_id"`
@@ -19,16 +19,16 @@ type (
 		Reward  *Reward `gorm:"-" json:"reward"`
 	}
 
-	CommentFavouriteStore interface {
+	FavouriteStore interface {
 		// SELECT
-		// 	I
+		// 	*
 		// FROM "favourites"
 		// WHERE
 		// 	"comment_id" = @commentID
 		// AND
 		// 	"deleted_at" is NULL
 		// ;
-		FindAllCommentFavourites(ctx context.Context, commentID uint64) ([]*CommentFavourite, error)
+		FindAllFavourites(ctx context.Context, commentID uint64) ([]*Favourite, error)
 
 		// SELECT
 		// 	*
@@ -39,11 +39,44 @@ type (
 		// 	"user_id"=@userID
 		// AND
 		// 	"deleted_at" is NULL;
-		FindUserCommentFavourites(ctx context.Context, userID uint64, commentIDs ...uint64) ([]*CommentFavourite, error)
+		FindUserFavourites(ctx context.Context, userID uint64, commentIDs []uint64) ([]*Favourite, error)
 
 		// SELECT
 		// 	count("id")
 		// FROM @@table
 		CountAllFavourites(ctx context.Context) (uint64, error)
+
+		// INSERT INTO "favourites"
+		// 	(
+		// 		"comment_id",
+		// 		"user_id",
+		// 		"created_at",
+		// 		"updated_at"
+		// 	)
+		// VALUES
+		// 	(
+		// 		@commentID,
+		// 		@userID,
+		// 		NOW(),
+		// 		NOW()
+		// 	)
+		// ON CONFLICT ("comment_id", "user_id") DO
+		// 	UPDATE
+		// 	SET "deleted_at" = NULL, "updated_at" = NOW()
+		// ;
+		CreateFavourite(ctx context.Context, userID, commentID uint64) error
+
+		// UPDATE "favourites"
+		// {{set}}
+		//   "deleted_at" = NOW()
+		// {{end}}
+		// WHERE
+		// 	"user_id" = @userID
+		// AND
+		// 	"comment_id" = @commentID
+		// AND
+		// 	"deleted_at" is NULL
+		// ;
+		DeleteFavourite(ctx context.Context, userID, commentID uint64) error
 	}
 )

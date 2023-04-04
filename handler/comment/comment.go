@@ -17,7 +17,7 @@ type AddCommentPayload struct {
 	Content string `json:"content"`
 }
 
-func GetComments(favors core.CommentFavouriteStore, comments core.CommentStore) http.HandlerFunc {
+func GetComments(favors core.FavouriteStore, comments core.CommentStore, commentz core.CommentService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		siteID, slug, found := session.SiteInfoFrom(ctx)
@@ -53,7 +53,7 @@ func GetComments(favors core.CommentFavouriteStore, comments core.CommentStore) 
 			return
 		}
 
-		items, err := comments.GetCommentsWithRewards(ctx, siteID, slug, offset, limit, orderBy, order)
+		items, err := commentz.GetCommentsWithRewards(ctx, siteID, slug, offset, limit, orderBy, order)
 		if err != nil {
 			render.Error(w, http.StatusInternalServerError, err)
 			return
@@ -67,7 +67,7 @@ func GetComments(favors core.CommentFavouriteStore, comments core.CommentStore) 
 					cmtIDs = append(cmtIDs, item.ID)
 				}
 
-				favs, err := favors.FindUserCommentFavourites(r.Context(), user.ID, cmtIDs...)
+				favs, err := favors.FindUserFavourites(r.Context(), user.ID, cmtIDs)
 				if err != nil {
 					render.Error(w, http.StatusInternalServerError, err)
 					return
@@ -90,7 +90,7 @@ func GetComments(favors core.CommentFavouriteStore, comments core.CommentStore) 
 	}
 }
 
-func GetComment(favors core.CommentFavouriteStore, comments core.CommentStore) http.HandlerFunc {
+func GetComment(favors core.FavouriteStore, commentz core.CommentService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
@@ -101,7 +101,7 @@ func GetComment(favors core.CommentFavouriteStore, comments core.CommentStore) h
 			return
 		}
 
-		comment, err := comments.GetCommentWithReward(ctx, commentID)
+		comment, err := commentz.GetCommentWithReward(ctx, commentID)
 		if err != nil {
 			render.Error(w, http.StatusInternalServerError, err)
 			return
@@ -112,7 +112,7 @@ func GetComment(favors core.CommentFavouriteStore, comments core.CommentStore) h
 			if comment != nil {
 				cmtIDs := []uint64{comment.ID}
 
-				favs, err := favors.FindUserCommentFavourites(r.Context(), user.ID, cmtIDs...)
+				favs, err := favors.FindUserFavourites(r.Context(), user.ID, cmtIDs)
 				if err != nil {
 					render.Error(w, http.StatusInternalServerError, err)
 					return

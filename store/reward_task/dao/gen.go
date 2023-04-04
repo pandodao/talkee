@@ -16,34 +16,34 @@ import (
 )
 
 var (
-	Q         = new(Query)
-	Favourite *favourite
+	Q          = new(Query)
+	RewardTask *rewardTask
 )
 
 func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	*Q = *Use(db, opts...)
-	Favourite = &Q.Favourite
+	RewardTask = &Q.RewardTask
 }
 
 func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 	return &Query{
-		db:        db,
-		Favourite: newFavourite(db, opts...),
+		db:         db,
+		RewardTask: newRewardTask(db, opts...),
 	}
 }
 
 type Query struct {
 	db *gorm.DB
 
-	Favourite favourite
+	RewardTask rewardTask
 }
 
 func (q *Query) Available() bool { return q.db != nil }
 
 func (q *Query) clone(db *gorm.DB) *Query {
 	return &Query{
-		db:        db,
-		Favourite: q.Favourite.clone(db),
+		db:         db,
+		RewardTask: q.RewardTask.clone(db),
 	}
 }
 
@@ -57,18 +57,18 @@ func (q *Query) WriteDB() *Query {
 
 func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 	return &Query{
-		db:        db,
-		Favourite: q.Favourite.replaceDB(db),
+		db:         db,
+		RewardTask: q.RewardTask.replaceDB(db),
 	}
 }
 
 type queryCtx struct {
-	Favourite IFavouriteDo
+	RewardTask IRewardTaskDo
 }
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
-		Favourite: q.Favourite.WithContext(ctx),
+		RewardTask: q.RewardTask.WithContext(ctx),
 	}
 }
 

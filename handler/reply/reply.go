@@ -17,7 +17,7 @@ type AddReplyPayload struct {
 	Content string `json:"content"`
 }
 
-func GetReplies(replys core.ReplyStore) http.HandlerFunc {
+func GetReplies(replys core.ReplyStore, replyz core.ReplyService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
@@ -41,7 +41,7 @@ func GetReplies(replys core.ReplyStore) http.HandlerFunc {
 			render.Error(w, http.StatusInternalServerError, err)
 			return
 		}
-		replies, err := replys.GetReplies(ctx, commentID, offset, limit)
+		replies, err := replyz.GetReplies(ctx, commentID, offset, limit)
 		if err != nil {
 			render.Error(w, http.StatusInternalServerError, err)
 			return

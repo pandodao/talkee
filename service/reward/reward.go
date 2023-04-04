@@ -10,6 +10,9 @@ import (
 	"time"
 
 	"talkee/core"
+	"talkee/store"
+	"talkee/store/reward"
+	rewardTask "talkee/store/reward_task"
 
 	"github.com/fox-one/mixin-sdk-go"
 	"github.com/fox-one/pkg/uuid"
@@ -20,7 +23,7 @@ func New(
 	rewards core.RewardStore,
 	rewardTasks core.RewardTaskStore,
 	rewardStrategys core.RewardStrategyStore,
-	favors core.CommentFavouriteStore,
+	favors core.FavouriteStore,
 	comments core.CommentStore,
 	client *mixin.Client,
 	cfg Config,
@@ -45,7 +48,7 @@ type service struct {
 	rewardTasks     core.RewardTaskStore
 	comments        core.CommentStore
 	rewardStrategys core.RewardStrategyStore
-	favors          core.CommentFavouriteStore
+	favors          core.FavouriteStore
 	client          *mixin.Client
 	cfg             Config
 }
@@ -87,7 +90,7 @@ func (s *service) ProcessRewardTask(ctx context.Context, model *core.RewardTask)
 			Amount:      defaultStrategy.MinRewardAmount.Mul(defaultStrategy.Ratio),
 			AssetID:     defaultStrategy.RewardAssetID,
 		}
-		
+
 		if decimal.NewFromInt(int64(cmt.FavorCount)).GreaterThan(defaultStrategy.MinRewardAmount) {
 			r.Amount = decimal.NewFromInt(int64(cmt.FavorCount)).Mul(defaultStrategy.Ratio)
 		}
@@ -98,7 +101,7 @@ func (s *service) ProcessRewardTask(ctx context.Context, model *core.RewardTask)
 	if length == defaultStrategy.TopCommentCount {
 		cmt := comments[defaultStrategy.TopCommentCount-1]
 		if cmt.FavorCount > 0 {
-			favors, err := s.favors.FindAllCommentFavourites(ctx, cmt.ID)
+			favors, err := s.favors.FindAllFavourites(ctx, cmt.ID)
 			if err != nil {
 				return err
 			}
@@ -107,13 +110,13 @@ func (s *service) ProcessRewardTask(ctx context.Context, model *core.RewardTask)
 				r := rand.New(s)
 				luckyFavor := favors[r.Intn(len(favors))]
 				rewards = append(rewards, &core.Reward{
-					ObjectType: core.RewardObjectTypeFavour,
-					ObjectID:   luckyFavor.ID,
-					SiteID:     cmt.SiteID,
+					ObjectType:  core.RewardObjectTypeFavour,
+					ObjectID:    luckyFavor.ID,
+					SiteID:      cmt.SiteID,
 					RecipientID: luckyFavor.Creator.MixinUserID,
-					Amount:  decimal.NewFromInt(int64(cmt.FavorCount)).Mul(defaultStrategy.Ratio),
-					Status:  core.RewardStatusCreated,
-					AssetID: defaultStrategy.RewardAssetID,
+					Amount:      decimal.NewFromInt(int64(cmt.FavorCount)).Mul(defaultStrategy.Ratio),
+					Status:      core.RewardStatusCreated,
+					AssetID:     defaultStrategy.RewardAssetID,
 				})
 			}
 		}
@@ -137,7 +140,6 @@ func (s *service) ProcessRewardTask(ctx context.Context, model *core.RewardTask)
 		rewardedUsers[cmt.Creator.MixinUserID] = true
 	}
 
-	
 	if len(comments) > defaultStrategy.TopCommentCount {
 		for _, cmt := range comments[defaultStrategy.TopCommentCount:] {
 			_, alreadyRewarded := rewardedUsers[cmt.Creator.MixinUserID]
@@ -157,7 +159,7 @@ func (s *service) ProcessRewardTask(ctx context.Context, model *core.RewardTask)
 	}
 
 	if len(rewards) > 0 {
-		if err := s.rewardTasks.FinishRewardTask(ctx, model, rewards...); err != nil {
+		if err := s.FinishRewardTask(ctx, model, rewards); err != nil {
 			return err
 		}
 	}
@@ -190,4 +192,25 @@ func (s *service) TransferReward(ctx context.Context, model *core.Reward) error 
 	model.Status = core.RewardStatusRewarded
 
 	return s.rewards.UpdateReward(ctx, model)
+}
+
+func (s *service) FinishRewardTask(ctx context.Context, model *core.RewardTask, rewards []*core.Reward) error {
+	if err := store.Transaction(func(tx *store.Handler) error {
+		rewardStore := reward.New(tx)
+		rewardTaskStore := rewardTask.New(tx)
+
+		for _, re := range rewards {
+			if err := rewardStore.CreateReward(ctx, re); err != nil {
+				return err
+			}
+
+			if err := rewardTaskStore.UpdateRewardTask(ctx, model); err != nil {
+				return err
+			}
+		}
+		return nil
+	}); err != nil {
+		return err
+	}
+	return nil
 }

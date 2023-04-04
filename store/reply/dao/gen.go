@@ -16,34 +16,34 @@ import (
 )
 
 var (
-	Q         = new(Query)
-	Favourite *favourite
+	Q     = new(Query)
+	Reply *reply
 )
 
 func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	*Q = *Use(db, opts...)
-	Favourite = &Q.Favourite
+	Reply = &Q.Reply
 }
 
 func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 	return &Query{
-		db:        db,
-		Favourite: newFavourite(db, opts...),
+		db:    db,
+		Reply: newReply(db, opts...),
 	}
 }
 
 type Query struct {
 	db *gorm.DB
 
-	Favourite favourite
+	Reply reply
 }
 
 func (q *Query) Available() bool { return q.db != nil }
 
 func (q *Query) clone(db *gorm.DB) *Query {
 	return &Query{
-		db:        db,
-		Favourite: q.Favourite.clone(db),
+		db:    db,
+		Reply: q.Reply.clone(db),
 	}
 }
 
@@ -57,18 +57,18 @@ func (q *Query) WriteDB() *Query {
 
 func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 	return &Query{
-		db:        db,
-		Favourite: q.Favourite.replaceDB(db),
+		db:    db,
+		Reply: q.Reply.replaceDB(db),
 	}
 }
 
 type queryCtx struct {
-	Favourite IFavouriteDo
+	Reply IReplyDo
 }
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
-		Favourite: q.Favourite.WithContext(ctx),
+		Reply: q.Reply.WithContext(ctx),
 	}
 }
 

@@ -16,34 +16,39 @@ import (
 )
 
 var (
-	Q         = new(Query)
-	Favourite *favourite
+	Q                   = new(Query)
+	ArweaveSyncListItem *arweaveSyncListItem
+	Comment             *comment
 )
 
 func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	*Q = *Use(db, opts...)
-	Favourite = &Q.Favourite
+	ArweaveSyncListItem = &Q.ArweaveSyncListItem
+	Comment = &Q.Comment
 }
 
 func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 	return &Query{
-		db:        db,
-		Favourite: newFavourite(db, opts...),
+		db:                  db,
+		ArweaveSyncListItem: newArweaveSyncListItem(db, opts...),
+		Comment:             newComment(db, opts...),
 	}
 }
 
 type Query struct {
 	db *gorm.DB
 
-	Favourite favourite
+	ArweaveSyncListItem arweaveSyncListItem
+	Comment             comment
 }
 
 func (q *Query) Available() bool { return q.db != nil }
 
 func (q *Query) clone(db *gorm.DB) *Query {
 	return &Query{
-		db:        db,
-		Favourite: q.Favourite.clone(db),
+		db:                  db,
+		ArweaveSyncListItem: q.ArweaveSyncListItem.clone(db),
+		Comment:             q.Comment.clone(db),
 	}
 }
 
@@ -57,18 +62,21 @@ func (q *Query) WriteDB() *Query {
 
 func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 	return &Query{
-		db:        db,
-		Favourite: q.Favourite.replaceDB(db),
+		db:                  db,
+		ArweaveSyncListItem: q.ArweaveSyncListItem.replaceDB(db),
+		Comment:             q.Comment.replaceDB(db),
 	}
 }
 
 type queryCtx struct {
-	Favourite IFavouriteDo
+	ArweaveSyncListItem IArweaveSyncListItemDo
+	Comment             ICommentDo
 }
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
-		Favourite: q.Favourite.WithContext(ctx),
+		ArweaveSyncListItem: q.ArweaveSyncListItem.WithContext(ctx),
+		Comment:             q.Comment.WithContext(ctx),
 	}
 }
 

@@ -206,23 +206,24 @@ func ApplySiteCors(originCache *cache.Cache, s *session.Session, sites core.Site
 
 			pass := false
 			origin = strings.ToLower(origin)
-			if origin == "https://talkee.mixin.fan" || origin == "https://talkee.commix.rocks" || origin == "https://talkee.pando.im" {
-				pass = true
-			} else {
-				_, found := originCache.Get(origin)
-				if found {
+			val, found := originCache.Get(origin)
+			if found {
+				if val.(bool) {
 					pass = true
 				} else {
-					site, err := sites.GetSiteByOrigin(ctx, origin)
-					if err != nil || site == nil {
-						pass = false
-					} else {
-						pass = true
-					}
+					pass = false
+				}
+			} else {
+				site, err := sites.GetSiteByOrigin(ctx, origin)
+				if err != nil || site == nil {
+					pass = false
+				} else {
+					pass = true
 				}
 			}
 
 			if !pass {
+				originCache.Set(origin, false, cache.DefaultExpiration)
 				next.ServeHTTP(w, r)
 				return
 			}

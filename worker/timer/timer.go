@@ -24,7 +24,7 @@ type (
 		cfg        Config
 		propertys  core.PropertyStore
 		comments   core.CommentStore
-		favourites core.CommentFavouriteStore
+		favourites core.FavouriteStore
 		rewards    core.RewardStore
 		assets     core.AssetStore
 		assetz     core.AssetService
@@ -35,7 +35,7 @@ func New(
 	cfg Config,
 	propertys core.PropertyStore,
 	comments core.CommentStore,
-	favourites core.CommentFavouriteStore,
+	favourites core.FavouriteStore,
 	rewards core.RewardStore,
 	assets core.AssetStore,
 	assetz core.AssetService,
@@ -121,7 +121,8 @@ func (w *Worker) updateGlobalSummary(ctx context.Context) error {
 		log.WithError(err).Warn("rewards.SumRewardsByAsset")
 		return err
 	}
-	for assetID, amount := range rewardSumMap {
+	for assetID, _amount := range rewardSumMap {
+		amount := _amount.(decimal.Decimal)
 		asset, err := w.assets.GetAsset(ctx, assetID)
 		if err != nil {
 			log.WithError(err).Warn("assets.GetAsset")

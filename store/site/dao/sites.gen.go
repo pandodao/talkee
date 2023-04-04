@@ -128,7 +128,7 @@ type ISiteDo interface {
 	GetSite(ctx context.Context, siteID uint64) (result *core.Site, err error)
 	GetSiteByOrigin(ctx context.Context, origin string) (result *core.Site, err error)
 	GetSitesByUser(ctx context.Context, userID uint64) (result []*core.Site, err error)
-	CreateSite(ctx context.Context, userID uint64, name string, origins []string, useArweave bool) (result uint64, err error)
+	CreateSite(ctx context.Context, userID uint64, name string, origins core.SiteOrigins, useArweave bool) (result uint64, err error)
 	UpdateSite(ctx context.Context, id uint64, site *core.Site) (err error)
 }
 
@@ -163,9 +163,7 @@ func (s siteDo) GetSite(ctx context.Context, siteID uint64) (result *core.Site, 
 //
 // FROM @@table
 // WHERE
-//
-//	"origins" @> (CAST('{}' as text[]) || CAST(@origin as text))
-//
+// @origin=ANY("origins")
 // AND
 //
 //	deleted_at IS NULL
@@ -175,9 +173,8 @@ func (s siteDo) GetSiteByOrigin(ctx context.Context, origin string) (result *cor
 	var params []interface{}
 
 	var generateSQL strings.Builder
-	params = append(params)
 	params = append(params, origin)
-	generateSQL.WriteString("SELECT * FROM sites WHERE \"origins\" ?> (CAST('{}' as text[]) || CAST(? as text)) AND deleted_at IS NULL LIMIT 1; ")
+	generateSQL.WriteString("SELECT * FROM sites WHERE ?=ANY(\"origins\") AND deleted_at IS NULL LIMIT 1; ")
 
 	var executeSQL *gorm.DB
 	executeSQL = s.UnderlyingDB().Raw(generateSQL.String(), params...).Take(&result) // ignore_security_alert
@@ -236,7 +233,7 @@ func (s siteDo) GetSitesByUser(ctx context.Context, userID uint64) (result []*co
 //
 // RETURNING id
 // ;
-func (s siteDo) CreateSite(ctx context.Context, userID uint64, name string, origins []string, useArweave bool) (result uint64, err error) {
+func (s siteDo) CreateSite(ctx context.Context, userID uint64, name string, origins core.SiteOrigins, useArweave bool) (result uint64, err error) {
 	var params []interface{}
 
 	var generateSQL strings.Builder

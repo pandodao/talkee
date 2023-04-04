@@ -22,7 +22,9 @@ import (
 	"talkee/store/favourite"
 	"talkee/store/property"
 	"talkee/store/reward"
+	rewardTask "talkee/store/reward_task"
 	"talkee/store/snapshot"
+	"talkee/store/user"
 	"talkee/worker"
 	"talkee/worker/arweavesyncer"
 	"talkee/worker/reward_processer"
@@ -83,18 +85,19 @@ func NewCmdWorker() *cobra.Command {
 
 			assets := asset.New(h)
 			snapshots := snapshot.New(h)
-			var users core.UserStore
-			// users := user.New(conn)
-			comments := comment.New(conn)
-			rewards := reward.New(conn)
+			users := user.New(h)
+			comments := comment.New(h)
+			rewards := reward.New(h)
+			rewardTasks := rewardTask.New(h)
+			var rewardStrategys core.RewardStrategyStore
 			favourites := favourite.New(h)
-			commentz := commentServ.New(arWallet, comments, commentServ.Config{
+			commentz := commentServ.New(arWallet, comments, rewards, users, commentServ.Config{
 				AppName: cfg.AppName,
 			})
 
 			rewardServCfg := rewardServ.Config{}
 			rewardServCfg.Pin, _ = s.GetPin()
-			rewardz := rewardServ.New(rewards, rewards, rewards, favourites, comments, client, rewardServCfg)
+			rewardz := rewardServ.New(rewards, rewardTasks, rewardStrategys, favourites, comments, client, rewardServCfg)
 
 			assetz := assetServ.New(client, assets)
 			snapshotz := snapshotServ.New(client)

@@ -80,7 +80,7 @@ sys:
 run migrate database
 
 ```bash
-./talkee migrate 
+./talkee migrate up
 ```
 
 run `./talkee help` to see full commands
