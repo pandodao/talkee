@@ -12,7 +12,7 @@ RUN go mod download -x
 ADD . .
 # RUN go mod tidy
 # RUN go mod download -x
-RUN env CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build
+RUN env CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags "-X main.version=`git tag --sort=-version:refname | head -n 1`
 
 FROM --platform=linux/amd64 alpine:latest as runner
 

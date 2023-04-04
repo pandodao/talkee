@@ -94,7 +94,7 @@ func NewCmdHttpd() *cobra.Command {
 
 			// hc
 			{
-				mux.Mount("/hc", hc.Handle(cmd.Version))
+				mux.Mount("/hc", hc.Handle(s.Version))
 			}
 
 			// rpc & api
