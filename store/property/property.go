@@ -21,14 +21,22 @@ func init() {
 }
 
 func New(h *store.Handler) core.PropertyStore {
-	dao.SetDefault(h.DB)
-	s := &storeImpl{}
-	v, ok := interface{}(dao.Property).(core.PropertyStore)
+	var q *dao.Query
+	if !dao.Q.Available() {
+		dao.SetDefault(h.DB)
+		q = dao.Q
+	} else {
+		q = dao.Use(h.DB)
+	}
+
+	v, ok := interface{}(q.Property).(core.PropertyStore)
 	if !ok {
 		panic("dao.Property is not core.PropertyStore")
 	}
-	s.PropertyStore = v
-	return s
+
+	return &storeImpl{
+		PropertyStore: v,
+	}
 }
 
 type storeImpl struct {

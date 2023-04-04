@@ -97,17 +97,19 @@ type propertyDo struct{ gen.DO }
 type IPropertyDo interface {
 	WithContext(ctx context.Context) IPropertyDo
 
-	Get(ctx context.Context, key string) (result core.PropertyValue, err error)
+	Get(ctx context.Context, key string) (result *core.Property, err error)
 	Set(ctx context.Context, key string, value interface{}) (result int64, err error)
 }
 
-// SELECT value FROM @@table WHERE key=@key
-func (p propertyDo) Get(ctx context.Context, key string) (result core.PropertyValue, err error) {
+// SELECT
+// *
+// FROM @@table WHERE "key"=@key;
+func (p propertyDo) Get(ctx context.Context, key string) (result *core.Property, err error) {
 	var params []interface{}
 
 	var generateSQL strings.Builder
 	params = append(params, key)
-	generateSQL.WriteString("SELECT value FROM properties WHERE key=? ")
+	generateSQL.WriteString("SELECT * FROM properties WHERE \"key\"=?; ")
 
 	var executeSQL *gorm.DB
 	executeSQL = p.UnderlyingDB().Raw(generateSQL.String(), params...).Take(&result) // ignore_security_alert
@@ -119,11 +121,11 @@ func (p propertyDo) Get(ctx context.Context, key string) (result core.PropertyVa
 // UPDATE @@table
 // {{set}}
 //
-//	value=@value,
-//	updated_at=NOW()
+//	"value"=@value,
+//	"updated_at"=NOW()
 //
 // {{end}}
-// WHERE key=@key
+// WHERE "key"=@key;
 func (p propertyDo) Set(ctx context.Context, key string, value interface{}) (result int64, err error) {
 	var params []interface{}
 
@@ -131,10 +133,10 @@ func (p propertyDo) Set(ctx context.Context, key string, value interface{}) (res
 	generateSQL.WriteString("UPDATE properties ")
 	var setSQL0 strings.Builder
 	params = append(params, value)
-	setSQL0.WriteString("value=?, updated_at=NOW() ")
+	setSQL0.WriteString("\"value\"=?, \"updated_at\"=NOW() ")
 	helper.JoinSetBuilder(&generateSQL, setSQL0)
 	params = append(params, key)
-	generateSQL.WriteString("WHERE key=? ")
+	generateSQL.WriteString("WHERE \"key\"=?; ")
 
 	var executeSQL *gorm.DB
 	executeSQL = p.UnderlyingDB().Raw(generateSQL.String(), params...).Take(&result) // ignore_security_alert

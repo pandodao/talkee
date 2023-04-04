@@ -8,34 +8,40 @@ import (
 
 type (
 	Property struct {
-		Key       string        `json:"key"`
-		Value     PropertyValue `json:"value"`
-		UpdatedAt *time.Time    `json:"updated_at"`
+		Key       string     `json:"key"`
+		Value     string     `gorm:"type:text" json:"value"`
+		UpdatedAt *time.Time `json:"updated_at"`
 	}
 
-	PropertyValue string
-
 	PropertyStore interface {
-		// SELECT value FROM @@table WHERE key=@key
-		Get(ctx context.Context, key string) (PropertyValue, error)
+		// SELECT
+		//  *
+		// FROM @@table WHERE "key"=@key;
+		Get(ctx context.Context, key string) (*Property, error)
+
 		// UPDATE @@table
 		//  {{set}}
-		//    value=@value,
-		//    updated_at=NOW()
+		//    "value"=@value,
+		//    "updated_at"=NOW()
 		//  {{end}}
-		// WHERE key=@key
+		// WHERE "key"=@key;
 		Set(ctx context.Context, key string, value interface{}) (int64, error)
 	}
 )
 
-func (pv PropertyValue) Time() time.Time {
-	t, _ := time.Parse(time.RFC3339Nano, string(pv))
+func (p *Property) Time() time.Time {
+	t, _ := time.Parse(time.RFC3339Nano, string(p.Value))
 	return t
 }
 
-func (pv PropertyValue) String() string {
-	return string(pv)
+func (p *Property) String() string {
+	return string(p.Value)
 }
-func (pv PropertyValue) Int64() (int64, error) {
-	return strconv.ParseInt(string(pv), 10, 64)
+
+func (p *Property) Bytes() []byte {
+	return []byte(p.Value)
+}
+
+func (p *Property) Int64() (int64, error) {
+	return strconv.ParseInt(string(p.Value), 10, 64)
 }

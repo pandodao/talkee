@@ -23,8 +23,10 @@ func GetGlobal(propertys core.PropertyStore) http.HandlerFunc {
 		}
 
 		stat := make(map[string]interface{})
-		jsonStr := val
-		jsoniter.Unmarshal([]byte(jsonStr), &stat)
+		if err := jsoniter.Unmarshal(val.Bytes(), &stat); err != nil {
+			render.Error(w, http.StatusInternalServerError, err)
+			return
+		}
 
 		render.JSON(w, stat)
 	}
