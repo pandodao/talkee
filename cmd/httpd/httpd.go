@@ -3,7 +3,6 @@ package httpd
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -29,7 +28,6 @@ import (
 	"github.com/fox-one/pkg/logger"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
-	"github.com/jmoiron/sqlx"
 
 	"github.com/drone/signal"
 	"github.com/sirupsen/logrus"
@@ -44,18 +42,11 @@ func NewCmdHttpd() *cobra.Command {
 			var err error
 			ctx := cmd.Context()
 			cfg := config.C()
-			conn, err := sqlx.Connect(cfg.DB.Driver, cfg.DB.Datasource)
-			if err != nil {
-				log.Fatalln("connect to database failed", err)
-			}
-			conn.SetMaxIdleConns(2)
 
 			h := store.MustInit(store.Config{
 				Driver: cfg.DB.Driver,
 				DSN:    cfg.DB.Datasource,
 			})
-
-			defer conn.Close()
 
 			s := session.From(ctx)
 			s.WithJWTSecret([]byte(config.C().Auth.JwtSecret))

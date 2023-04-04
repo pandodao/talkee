@@ -3,7 +3,6 @@ package wss
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -26,7 +25,6 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
-	"github.com/jmoiron/sqlx"
 	"github.com/olahol/melody"
 
 	"github.com/drone/signal"
@@ -42,14 +40,6 @@ func NewCmdWss() *cobra.Command {
 			var err error
 			ctx := cmd.Context()
 			cfg := config.C()
-
-			conn, err := sqlx.Connect(cfg.DB.Driver, cfg.DB.Datasource)
-			if err != nil {
-				log.Fatalln("connect to database failed", err)
-			}
-			conn.SetMaxIdleConns(2)
-
-			defer conn.Close()
 
 			h := store.MustInit(store.Config{
 				Driver: cfg.DB.Driver,

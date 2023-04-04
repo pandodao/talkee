@@ -2,10 +2,8 @@ package worker
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
-	"time"
 
 	"talkee/config"
 	"talkee/core"
@@ -35,7 +33,6 @@ import (
 	"github.com/fox-one/pkg/logger"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
-	"github.com/jmoiron/sqlx"
 	"github.com/rs/cors"
 	"golang.org/x/sync/errgroup"
 
@@ -50,14 +47,6 @@ func NewCmdWorker() *cobra.Command {
 			var err error
 			ctx := cmd.Context()
 			cfg := config.C()
-
-			conn, err := sqlx.Connect(cfg.DB.Driver, cfg.DB.Datasource)
-			if err != nil {
-				log.Fatalln("connect to database failed", err)
-			}
-			conn.SetMaxIdleConns(20)
-			conn.SetConnMaxLifetime(time.Hour)
-			defer conn.Close()
 
 			h := store.MustInit(store.Config{
 				Driver: cfg.DB.Driver,
