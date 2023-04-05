@@ -29,7 +29,7 @@ func newTip(db *gorm.DB, opts ...gen.DOOption) tip {
 	_tip.UserID = field.NewUint64(tableName, "user_id")
 	_tip.SiteID = field.NewUint64(tableName, "site_id")
 	_tip.Slug = field.NewString(tableName, "slug")
-	_tip.TipType = field.NewString(tableName, "tip_type")
+	_tip.AirdropType = field.NewString(tableName, "airdrop_type")
 	_tip.StrategyName = field.NewString(tableName, "strategy_name")
 	_tip.StrategyParams = field.NewField(tableName, "strategy_params")
 	_tip.AssetID = field.NewString(tableName, "asset_id")
@@ -54,7 +54,7 @@ type tip struct {
 	UserID         field.Uint64
 	SiteID         field.Uint64
 	Slug           field.String
-	TipType        field.String
+	AirdropType    field.String
 	StrategyName   field.String
 	StrategyParams field.Field
 	AssetID        field.String
@@ -85,7 +85,7 @@ func (t *tip) updateTableName(table string) *tip {
 	t.UserID = field.NewUint64(table, "user_id")
 	t.SiteID = field.NewUint64(table, "site_id")
 	t.Slug = field.NewString(table, "slug")
-	t.TipType = field.NewString(table, "tip_type")
+	t.AirdropType = field.NewString(table, "airdrop_type")
 	t.StrategyName = field.NewString(table, "strategy_name")
 	t.StrategyParams = field.NewField(table, "strategy_params")
 	t.AssetID = field.NewString(table, "asset_id")
@@ -117,7 +117,7 @@ func (t *tip) fillFieldMap() {
 	t.fieldMap["user_id"] = t.UserID
 	t.fieldMap["site_id"] = t.SiteID
 	t.fieldMap["slug"] = t.Slug
-	t.fieldMap["tip_type"] = t.TipType
+	t.fieldMap["airdrop_type"] = t.AirdropType
 	t.fieldMap["strategy_name"] = t.StrategyName
 	t.fieldMap["strategy_params"] = t.StrategyParams
 	t.fieldMap["asset_id"] = t.AssetID

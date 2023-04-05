@@ -6,7 +6,6 @@ import (
 	"strconv"
 
 	"talkee/config"
-	"talkee/core"
 	"talkee/handler/hc"
 	"talkee/internal/mixpay"
 	assetServ "talkee/service/asset"
@@ -22,7 +21,6 @@ import (
 	"talkee/store/favourite"
 	"talkee/store/property"
 	"talkee/store/reward"
-	rewardTask "talkee/store/reward_task"
 	"talkee/store/snapshot"
 	"talkee/store/tip"
 	"talkee/store/user"
@@ -82,8 +80,6 @@ func NewCmdWorker() *cobra.Command {
 			users := user.New(h)
 			comments := comment.New(h)
 			rewards := reward.New(h)
-			rewardTasks := rewardTask.New(h)
-			var rewardStrategys core.RewardStrategyStore
 			favourites := favourite.New(h)
 			tips := tip.New(h)
 
@@ -93,7 +89,7 @@ func NewCmdWorker() *cobra.Command {
 
 			rewardServCfg := rewardServ.Config{}
 			rewardServCfg.Pin, _ = s.GetPin()
-			rewardz := rewardServ.New(rewards, rewardTasks, rewardStrategys, favourites, comments, client, rewardServCfg)
+			rewardz := rewardServ.New(rewards, favourites, comments, client, rewardServCfg)
 
 			assetz := assetServ.New(client, assets)
 			snapshotz := snapshotServ.New(client)

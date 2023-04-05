@@ -6,7 +6,6 @@ package dao
 
 import (
 	"context"
-	"strings"
 
 	"gorm.io/gorm"
 
@@ -14,8 +13,6 @@ import (
 	"gorm.io/gen/field"
 
 	"talkee/core"
-
-	"time"
 )
 
 func newRewardTask(db *gorm.DB, opts ...gen.DOOption) rewardTask {
@@ -113,62 +110,6 @@ type rewardTaskDo struct{ gen.DO }
 
 type IRewardTaskDo interface {
 	WithContext(ctx context.Context) IRewardTaskDo
-
-	UpdateRewardTask(ctx context.Context, model *core.RewardTask) (err error)
-	FindUnprocessedList(ctx context.Context, before time.Time, limit int) (result []*core.RewardTask, err error)
-}
-
-// UPDATE
-//
-//	"reward_tasks"
-//
-// SET
-//
-//	"processed" = @model.Processed,
-//	"updated_at" = NOW()
-//
-// WHERE
-//
-//	"id" = @model.ID;
-//
-// ;
-func (r rewardTaskDo) UpdateRewardTask(ctx context.Context, model *core.RewardTask) (err error) {
-	var params []interface{}
-
-	var generateSQL strings.Builder
-	params = append(params, model.Processed)
-	params = append(params, model.ID)
-	generateSQL.WriteString("UPDATE \"reward_tasks\" SET \"processed\" = ?, \"updated_at\" = NOW() WHERE \"id\" = ?; ; ")
-
-	var executeSQL *gorm.DB
-	executeSQL = r.UnderlyingDB().Exec(generateSQL.String(), params...) // ignore_security_alert
-	err = executeSQL.Error
-
-	return
-}
-
-// SELECT
-// *
-// FROM "reward_tasks"
-// WHERE
-//
-//	"created_at" < @before
-//	AND "processed" = false
-//
-// LIMIT @limit;
-func (r rewardTaskDo) FindUnprocessedList(ctx context.Context, before time.Time, limit int) (result []*core.RewardTask, err error) {
-	var params []interface{}
-
-	var generateSQL strings.Builder
-	params = append(params, before)
-	params = append(params, limit)
-	generateSQL.WriteString("SELECT * FROM \"reward_tasks\" WHERE \"created_at\" < ? AND \"processed\" = false LIMIT ?; ")
-
-	var executeSQL *gorm.DB
-	executeSQL = r.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert
-	err = executeSQL.Error
-
-	return
 }
 
 func (r rewardTaskDo) WithContext(ctx context.Context) IRewardTaskDo {

@@ -146,16 +146,6 @@ CREATE TABLE "rewards" (
   "created_at" timestamptz,
   "updated_at" timestamptz
 );
-CREATE TABLE "reward_tasks" (
-  "id" BIGSERIAL PRIMARY KEY,
-  "site_id" int  NOT NULL,
-  "slug" varchar(1000) NOT NULL,
-  "processed" boolean default false,
-  "strategy_id" int default 0,
-  "created_at" timestamptz,
-  "updated_at" timestamptz
-);
-CREATE UNIQUE INDEX uidx_reward_tasks_site_slug ON "reward_tasks" USING BTREE("site_id", "slug");
 
 -- +goose StatementEnd
 
@@ -171,6 +161,4 @@ DROP TABLE IF EXISTS attachments;
 DROP TABLE IF EXISTS snapshots;
 DROP TABLE IF EXISTS favourites;
 DROP TABLE IF EXISTS rewards;
-DROP TABLE IF EXISTS reward_strategies;
-DROP TABLE IF EXISTS reward_tasks;
 -- +goose StatementEnd

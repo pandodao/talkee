@@ -8,7 +8,6 @@ import (
 	_ "talkee/store/favourite"
 	_ "talkee/store/property"
 	_ "talkee/store/reward"
-	_ "talkee/store/reward_task"
 	_ "talkee/store/site"
 	_ "talkee/store/snapshot"
 	_ "talkee/store/tip"
