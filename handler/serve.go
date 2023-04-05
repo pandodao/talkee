@@ -45,7 +45,8 @@ func New(cfg Config,
 
 	melody *melody.Melody,
 ) Server {
-	originCache := cache.New(time.Hour, time.Hour)
+	// @TODO: make this longer, but need to update the cache on site update
+	originCache := cache.New(5*time.Minute, 5*time.Minute)
 	return Server{cfg: cfg, session: session,
 		propertys:  propertys,
 		comments:   comments,
