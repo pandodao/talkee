@@ -282,7 +282,7 @@ func (a arweaveSyncListItemDo) CreateComment(ctx context.Context, userID uint64,
 //
 // WHERE
 //
-//	"id" = :id AND "deleted_at" IS NULL;
+//	"id" = @id AND "deleted_at" IS NULL;
 //
 // ;
 func (a arweaveSyncListItemDo) UpdateCommentTxHash(ctx context.Context, id uint64, txHash string) (err error) {
@@ -290,7 +290,8 @@ func (a arweaveSyncListItemDo) UpdateCommentTxHash(ctx context.Context, id uint6
 
 	var generateSQL strings.Builder
 	params = append(params, txHash)
-	generateSQL.WriteString("UPDATE \"comments\" SET \"arweave_tx_hash\" = ?, \"updated_at\" = NOW() WHERE \"id\" = :id AND \"deleted_at\" IS NULL; ; ")
+	params = append(params, id)
+	generateSQL.WriteString("UPDATE \"comments\" SET \"arweave_tx_hash\" = ?, \"updated_at\" = NOW() WHERE \"id\" = ? AND \"deleted_at\" IS NULL; ; ")
 
 	var executeSQL *gorm.DB
 	executeSQL = a.UnderlyingDB().Exec(generateSQL.String(), params...) // ignore_security_alert
@@ -341,26 +342,43 @@ func (a arweaveSyncListItemDo) CountComments(ctx context.Context, siteID uint64,
 // FROM "comments"
 // WHERE
 //
-//	"site_id" = $1
+//	"site_id" = @siteID
 //
 // AND
 //
-//	"slug" = $2
+//	"slug" = @slug
 //
 // AND "deleted_at" IS NULL;
 func (a arweaveSyncListItemDo) GetAllCommentsBySiteSlug(ctx context.Context, siteID uint64, slug string) (result []*core.Comment, err error) {
+	var params []interface{}
+
 	var generateSQL strings.Builder
-	generateSQL.WriteString("SELECT \"id\", \"user_id\", \"site_id\", \"slug\", \"favor_count\" FROM \"comments\" WHERE \"site_id\" = $1 AND \"slug\" = $2 AND \"deleted_at\" IS NULL; ")
+	params = append(params, siteID)
+	params = append(params, slug)
+	generateSQL.WriteString("SELECT \"id\", \"user_id\", \"site_id\", \"slug\", \"favor_count\" FROM \"comments\" WHERE \"site_id\" = ? AND \"slug\" = ? AND \"deleted_at\" IS NULL; ")
 
 	var executeSQL *gorm.DB
-	executeSQL = a.UnderlyingDB().Raw(generateSQL.String()).Find(&result) // ignore_security_alert
+	executeSQL = a.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert
 	err = executeSQL.Error
 
 	return
 }
 
-// "comments"."created_at",
+// SELECT
 //
+//	"comments"."id",
+//	"comments"."user_id",
+//	"comments"."site_id",
+//	"comments"."slug",
+//	"comments"."favor_count", "reply_count",
+//	"comments"."arweave_tx_hash",
+//	"comments"."content",
+//	"users"."mixin_user_id",
+//	"users"."mixin_identity_number",
+//	"users"."full_name",
+//	"users"."avatar_url",
+//	"users"."mvm_public_key",
+//	"comments"."created_at",
 //	"comments"."updated_at"
 //
 // FROM "comments"
@@ -374,14 +392,17 @@ func (a arweaveSyncListItemDo) GetAllCommentsBySiteSlug(ctx context.Context, sit
 //	AND "comments"."deleted_at" IS NULL
 //
 // ORDER BY "comments"."created_at" asc
-// LIMIT :limit
+// LIMIT @limit
 // ;
 func (a arweaveSyncListItemDo) FindArweaveSyncList(ctx context.Context, limit uint64) (result []*core.ArweaveSyncListItem, err error) {
+	var params []interface{}
+
 	var generateSQL strings.Builder
-	generateSQL.WriteString("\"comments\".\"created_at\", \"comments\".\"updated_at\" FROM \"comments\" INNER JOIN \"users\" ON \"comments\".\"user_id\" = \"users\".\"id\" WHERE \"comments\".\"site_id\" in ( select \"id\" FROM \"sites\" WHERE \"use_arweave\" = true ) AND (\"comments\".\"arweave_tx_hash\" is NULL OR \"comments\".\"arweave_tx_hash\" = '') AND \"comments\".\"deleted_at\" IS NULL ORDER BY \"comments\".\"created_at\" asc LIMIT :limit ; ")
+	params = append(params, limit)
+	generateSQL.WriteString("SELECT \"comments\".\"id\", \"comments\".\"user_id\", \"comments\".\"site_id\", \"comments\".\"slug\", \"comments\".\"favor_count\", \"reply_count\", \"comments\".\"arweave_tx_hash\", \"comments\".\"content\", \"users\".\"mixin_user_id\", \"users\".\"mixin_identity_number\", \"users\".\"full_name\", \"users\".\"avatar_url\", \"users\".\"mvm_public_key\", \"comments\".\"created_at\", \"comments\".\"updated_at\" FROM \"comments\" INNER JOIN \"users\" ON \"comments\".\"user_id\" = \"users\".\"id\" WHERE \"comments\".\"site_id\" in ( select \"id\" FROM \"sites\" WHERE \"use_arweave\" = true ) AND (\"comments\".\"arweave_tx_hash\" is NULL OR \"comments\".\"arweave_tx_hash\" = '') AND \"comments\".\"deleted_at\" IS NULL ORDER BY \"comments\".\"created_at\" asc LIMIT ? ; ")
 
 	var executeSQL *gorm.DB
-	executeSQL = a.UnderlyingDB().Raw(generateSQL.String()).Find(&result) // ignore_security_alert
+	executeSQL = a.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert
 	err = executeSQL.Error
 
 	return

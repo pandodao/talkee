@@ -25,7 +25,7 @@ type (
 		//    "updated_at"=NOW()
 		//  {{end}}
 		// WHERE "key"=@key;
-		Set(ctx context.Context, key string, value interface{}) (int64, error)
+		Set(ctx context.Context, key string, value string) error
 	}
 )
 

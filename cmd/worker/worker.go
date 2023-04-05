@@ -8,10 +8,12 @@ import (
 	"talkee/config"
 	"talkee/core"
 	"talkee/handler/hc"
+	"talkee/internal/mixpay"
 	assetServ "talkee/service/asset"
 	commentServ "talkee/service/comment"
 	rewardServ "talkee/service/reward"
 	snapshotServ "talkee/service/snapshot"
+	tipServ "talkee/service/tip"
 	"talkee/session"
 	"talkee/store"
 
@@ -22,13 +24,14 @@ import (
 	"talkee/store/reward"
 	rewardTask "talkee/store/reward_task"
 	"talkee/store/snapshot"
+	"talkee/store/tip"
 	"talkee/store/user"
 	"talkee/worker"
 	"talkee/worker/arweavesyncer"
 	"talkee/worker/reward_processer"
-	"talkee/worker/reward_task_processer"
 	"talkee/worker/syncer"
 	"talkee/worker/timer"
+	"talkee/worker/tip_deliver"
 
 	"github.com/fox-one/pkg/logger"
 	"github.com/go-chi/chi"
@@ -70,6 +73,8 @@ func NewCmdWorker() *cobra.Command {
 				return err
 			}
 
+			mixpayClient := mixpay.New()
+
 			propertys := property.New(h)
 
 			assets := asset.New(h)
@@ -80,6 +85,8 @@ func NewCmdWorker() *cobra.Command {
 			rewardTasks := rewardTask.New(h)
 			var rewardStrategys core.RewardStrategyStore
 			favourites := favourite.New(h)
+			tips := tip.New(h)
+
 			commentz := commentServ.New(arWallet, comments, rewards, users, commentServ.Config{
 				AppName: cfg.AppName,
 			})
@@ -90,10 +97,18 @@ func NewCmdWorker() *cobra.Command {
 
 			assetz := assetServ.New(client, assets)
 			snapshotz := snapshotServ.New(client)
+			tipz := tipServ.New(tipServ.Config{
+				ClientID:          client.ClientID,
+				MixpayPayeeID:     cfg.Mixpay.PayeeID,
+				MixpayCallbackURL: cfg.Mixpay.CallbackURL,
+			}, mixpayClient, tips, comments, rewards, commentz)
 
 			workers := []worker.Worker{
 				// reward task processer
-				reward_task_processer.New(rewardz),
+				// reward_task_processer.New(rewardz),
+
+				// tip delivery
+				tip_deliver.New(tips, tipz),
 
 				// reward process
 				reward_processer.New(rewardz),

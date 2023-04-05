@@ -98,7 +98,7 @@ type IPropertyDo interface {
 	WithContext(ctx context.Context) IPropertyDo
 
 	Get(ctx context.Context, key string) (result *core.Property, err error)
-	Set(ctx context.Context, key string, value interface{}) (result int64, err error)
+	Set(ctx context.Context, key string, value string) (err error)
 }
 
 // SELECT
@@ -126,7 +126,7 @@ func (p propertyDo) Get(ctx context.Context, key string) (result *core.Property,
 //
 // {{end}}
 // WHERE "key"=@key;
-func (p propertyDo) Set(ctx context.Context, key string, value interface{}) (result int64, err error) {
+func (p propertyDo) Set(ctx context.Context, key string, value string) (err error) {
 	var params []interface{}
 
 	var generateSQL strings.Builder
@@ -139,7 +139,7 @@ func (p propertyDo) Set(ctx context.Context, key string, value interface{}) (res
 	generateSQL.WriteString("WHERE \"key\"=?; ")
 
 	var executeSQL *gorm.DB
-	executeSQL = p.UnderlyingDB().Raw(generateSQL.String(), params...).Take(&result) // ignore_security_alert
+	executeSQL = p.UnderlyingDB().Exec(generateSQL.String(), params...) // ignore_security_alert
 	err = executeSQL.Error
 
 	return

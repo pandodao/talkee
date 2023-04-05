@@ -116,19 +116,18 @@ func (w *Worker) updateGlobalSummary(ctx context.Context) error {
 	}
 
 	totalUsd := decimal.Zero
-	rewardSumMap, err := w.rewards.SumRewardsByAsset(ctx)
+	sumItems, err := w.rewards.SumRewardsByAsset(ctx)
 	if err != nil {
 		log.WithError(err).Warn("rewards.SumRewardsByAsset")
 		return err
 	}
-	for assetID, _amount := range rewardSumMap {
-		amount := _amount.(decimal.Decimal)
-		asset, err := w.assets.GetAsset(ctx, assetID)
+	for _, item := range sumItems {
+		asset, err := w.assets.GetAsset(ctx, item.AssetID)
 		if err != nil {
 			log.WithError(err).Warn("assets.GetAsset")
 			continue
 		}
-		totalUsd = totalUsd.Add(amount.Mul(asset.PriceUSD))
+		totalUsd = totalUsd.Add(item.Amount.Mul(asset.PriceUSD))
 	}
 
 	favCounts, err := w.favourites.CountAllFavourites(ctx)
@@ -154,7 +153,7 @@ func (w *Worker) updateGlobalSummary(ctx context.Context) error {
 		return err
 	}
 
-	if _, err := w.propertys.Set(ctx, statGlobalSummary, string(buf)); err != nil {
+	if err := w.propertys.Set(ctx, statGlobalSummary, string(buf)); err != nil {
 		log.WithError(err).Errorln("properties.Set")
 		return err
 	}

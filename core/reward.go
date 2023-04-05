@@ -8,8 +8,10 @@ import (
 )
 
 var (
-	RewardStatusCreated     = "created"
-	RewardStatusRewarded    = "rewarded"
+	RewardStatusCreated  = "created"
+	RewardStatusRewarded = "rewarded"
+
+	RewardObjectTypeSlug    = "slug"
 	RewardObjectTypeComment = "comment"
 	RewardObjectTypeFavour  = "favour"
 )
@@ -42,6 +44,7 @@ type (
 
 	Reward struct {
 		ID          uint64          `json:"id"`
+		TipID       uint64          `json:"tip_id"`
 		ObjectType  string          `json:"object_type"`
 		ObjectID    uint64          `json:"object_id"`
 		SiteID      uint64          `json:"site_id"`
@@ -50,9 +53,15 @@ type (
 		SnapshotID  string          `json:"snapshot_id"`
 		AssetID     string          `json:"asset_id"`
 		Amount      decimal.Decimal `json:"amount"`
+		Memo        string          `json:"memo"`
 		Status      string          `json:"status"`
 		CreatedAt   *time.Time      `json:"created_at"`
 		UpdatedAt   *time.Time      `json:"updated_at"`
+	}
+
+	SumRewardItem struct {
+		AssetID string          `json:"asset_id"`
+		Amount  decimal.Decimal `json:"amount"`
 	}
 
 	RewardStore interface {
@@ -62,10 +71,11 @@ type (
 		// FROM
 		// 	"rewards"
 		// GROUP BY "asset_id";
-		SumRewardsByAsset(ctx context.Context) (map[string]interface{}, error)
+		SumRewardsByAsset(ctx context.Context) ([]*SumRewardItem, error)
 
 		// INSERT INTO "rewards"
 		// 	(
+		//    "tip_id",
 		// 		"object_type",
 		// 		"object_id",
 		// 		"site_id",
@@ -74,12 +84,14 @@ type (
 		// 		"snapshot_id",
 		// 		"asset_id",
 		// 		"amount",
+		//    "memo",
 		// 		"status",
 		// 		"created_at",
 		// 		"updated_at"
 		// 	)
 		// VALUES
 		// 	(
+		// 		@model.TipID,
 		// 		@model.ObjectType,
 		// 		@model.ObjectID,
 		// 		@model.SiteID,
@@ -88,6 +100,7 @@ type (
 		// 		@model.SnapshotID,
 		// 		@model.AssetID,
 		// 		@model.Amount,
+		//    @model.Memo,
 		// 		@model.Status,
 		// 		NOW(), NOW()
 		// 	);
@@ -101,7 +114,7 @@ type (
 		// 	"trace_id"= @model.TraceID,
 		// 	"updated_at" = NOW()
 		// WHERE
-		// 	"id" = :id;
+		// 	"id" = @model.ID;
 		UpdateReward(ctx context.Context, model *Reward) error
 
 		// SELECT
@@ -113,6 +126,16 @@ type (
 		// ORDER BY "id" asc
 		// LIMIT @limit;
 		FindCreatedRewards(ctx context.Context, limit int) ([]*Reward, error)
+
+		// SELECT
+		//  *
+		// FROM
+		//  "rewards"
+		// WHERE
+		//  "tip_id" = @tipID AND "status" = @status
+		// ORDER BY "id" asc;
+		// ;
+		GetRewardsByTipIDAndStatus(ctx context.Context, tipID uint64, status string) ([]*Reward, error)
 
 		// SELECT
 		//  *

@@ -108,7 +108,7 @@ type (
 		//  "arweave_tx_hash" = @txHash,
 		// 	"updated_at" = NOW()
 		// WHERE
-		// 	"id" = :id AND "deleted_at" IS NULL;
+		// 	"id" = @id AND "deleted_at" IS NULL;
 		// ;
 		UpdateCommentTxHash(ctx context.Context, id uint64, txHash string) (err error)
 
@@ -130,9 +130,9 @@ type (
 		// 	"favor_count"
 		// FROM "comments"
 		// WHERE
-		//   "site_id" = $1
+		//   "site_id" = @siteID
 		// AND
-		//   "slug" = $2
+		//   "slug" = @slug
 		// AND "deleted_at" IS NULL;
 		GetAllCommentsBySiteSlug(ctx context.Context, siteID uint64, slug string) ([]*Comment, error)
 
@@ -144,13 +144,11 @@ type (
 		// 	"comments"."favor_count", "reply_count",
 		// 	"comments"."arweave_tx_hash",
 		// 	"comments"."content",
-
 		// 	"users"."mixin_user_id",
 		// 	"users"."mixin_identity_number",
 		// 	"users"."full_name",
 		// 	"users"."avatar_url",
 		// 	"users"."mvm_public_key",
-
 		// 	"comments"."created_at",
 		// 	"comments"."updated_at"
 		// FROM "comments"
@@ -162,7 +160,7 @@ type (
 		// 	AND  ("comments"."arweave_tx_hash" is NULL OR "comments"."arweave_tx_hash" = '')
 		// 	AND "comments"."deleted_at" IS NULL
 		// ORDER BY "comments"."created_at" asc
-		// LIMIT :limit
+		// LIMIT @limit
 		// ;
 		FindArweaveSyncList(ctx context.Context, limit uint64) ([]*ArweaveSyncListItem, error)
 
@@ -192,5 +190,7 @@ type (
 		FavComment(ctx context.Context, id, userID uint64, fav bool) (*Comment, error)
 		GetCommentsWithRewards(ctx context.Context, siteID uint64, slug string, page, limit uint64, orderBy, order string) ([]*Comment, error)
 		GetCommentWithReward(ctx context.Context, id uint64) (*Comment, error)
+
+		WithUsers(ctx context.Context, comments ...*Comment) error
 	}
 )

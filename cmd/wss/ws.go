@@ -87,7 +87,7 @@ func NewCmdWss() *cobra.Command {
 				cfg := handler.Config{}
 				svr := handler.New(cfg, s,
 					propertys,
-					comments, users, sites, replys, nil, nil, userz, commentz, replyz, nil, m)
+					comments, users, sites, replys, nil, nil, userz, commentz, replyz, nil, nil, m)
 				// wss
 				mux.Mount("/ws", svr.WebsocketConnectHandler())
 			}

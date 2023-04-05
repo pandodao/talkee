@@ -64,7 +64,7 @@ type (
 
 		// UPDATE @@table
 		// 	{{set}}
-		// 	  "name"=@user.FullName,
+		// 	  "full_name"=@user.FullName,
 		// 	  "avatar_url"=@user.AvatarURL,
 		// 	  "lang"=@user.Lang,
 		// 		"updated_at"=NOW()

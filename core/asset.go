@@ -28,7 +28,7 @@ type (
 
 		// SELECT
 		// * FROM @@table
-		// WEHRE
+		// WHERE
 		//   asset_id = @assetID AND deleted_at IS NULL;
 		GetAsset(ctx context.Context, assetID string) (*Asset, error)
 

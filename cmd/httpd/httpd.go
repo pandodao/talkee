@@ -10,9 +10,11 @@ import (
 	"talkee/config"
 	"talkee/handler"
 	"talkee/handler/hc"
+	"talkee/internal/mixpay"
 	assetServ "talkee/service/asset"
 	commentServ "talkee/service/comment"
 	replyServ "talkee/service/reply"
+	tipServ "talkee/service/tip"
 	userServ "talkee/service/user"
 	"talkee/session"
 	"talkee/store"
@@ -23,6 +25,7 @@ import (
 	"talkee/store/reply"
 	"talkee/store/reward"
 	"talkee/store/site"
+	"talkee/store/tip"
 	"talkee/store/user"
 
 	"github.com/fox-one/pkg/logger"
@@ -61,6 +64,8 @@ func NewCmdHttpd() *cobra.Command {
 				return err
 			}
 
+			mixpayClient := mixpay.New()
+
 			propertys := property.New(h)
 			users := user.New(h)
 			comments := comment.New(h)
@@ -69,6 +74,7 @@ func NewCmdHttpd() *cobra.Command {
 			assets := asset.New(h)
 			favourites := favourite.New(h)
 			rewards := reward.New(h)
+			tips := tip.New(h)
 
 			userz := userServ.New(client, users, userServ.Config{
 				MixinClientSecret: cfg.Auth.MixinClientSecret,
@@ -78,6 +84,11 @@ func NewCmdHttpd() *cobra.Command {
 			})
 			replyz := replyServ.New(replys, comments, users, replyServ.Config{})
 			assetz := assetServ.New(client, assets)
+			tipz := tipServ.New(tipServ.Config{
+				ClientID:                client.ClientID,
+				MixpayPayeeID:           cfg.Mixpay.PayeeID,
+				MixpayCallbackURL:       cfg.Mixpay.CallbackURL,
+			}, mixpayClient, tips, comments, rewards, commentz)
 
 			mux := chi.NewMux()
 			mux.Use(middleware.Recoverer)
@@ -102,7 +113,7 @@ func NewCmdHttpd() *cobra.Command {
 				cfg := handler.Config{}
 				svr := handler.New(cfg, s,
 					propertys,
-					comments, users, sites, replys, assets, favourites, userz, commentz, replyz, assetz, nil)
+					comments, users, sites, replys, assets, favourites, userz, commentz, replyz, assetz, tipz, nil)
 				// api
 				restHandler := svr.HandleRest()
 				mux.Mount("/api", restHandler)

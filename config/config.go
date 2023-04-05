@@ -4,8 +4,7 @@ type (
 	Config struct {
 		DB      DB     `yaml:"db"`
 		Auth    Auth   `yaml:"auth"`
-		Aws     Aws    `yaml:"aws"`
-		Sys     Sys    `yaml:"sys"`
+		Mixpay  Mixpay `yaml:"mixpay"`
 		AppName string `yaml:"appname"`
 	}
 
@@ -19,14 +18,8 @@ type (
 		Datasource string `json:"datasource"`
 	}
 
-	Aws struct {
-		Key    string `yaml:"key"`
-		Secret string `yaml:"secret"`
-		Region string `yaml:"region"`
-		Bucket string `yaml:"bucket"`
-	}
-
-	Sys struct {
-		AttachmentBase string `yaml:"attachment_base"`
+	Mixpay struct {
+		PayeeID     string `json:"payee_id"`
+		CallbackURL string `json:"callback_url"`
 	}
 )

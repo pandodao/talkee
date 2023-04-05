@@ -167,6 +167,7 @@ func (s *CommentService) GetCommentsWithRewards(ctx context.Context, siteID uint
 	if err := s.WithRewards(ctx, comms...); err != nil {
 		return nil, err
 	}
+
 	if err := s.WithUsers(ctx, comms...); err != nil {
 		return nil, err
 	}
@@ -183,6 +184,7 @@ func (s *CommentService) GetCommentWithReward(ctx context.Context, id uint64) (*
 	if err := s.WithRewards(ctx, cm); err != nil {
 		return nil, err
 	}
+
 	if err := s.WithUsers(ctx, cm); err != nil {
 		return nil, err
 	}

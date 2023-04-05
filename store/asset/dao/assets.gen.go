@@ -141,7 +141,7 @@ func (a assetDo) GetAssets(ctx context.Context) (result []*core.Asset, err error
 
 // SELECT
 // * FROM @@table
-// WEHRE
+// WHERE
 //
 //	asset_id = @assetID AND deleted_at IS NULL;
 func (a assetDo) GetAsset(ctx context.Context, assetID string) (result *core.Asset, err error) {
@@ -149,7 +149,7 @@ func (a assetDo) GetAsset(ctx context.Context, assetID string) (result *core.Ass
 
 	var generateSQL strings.Builder
 	params = append(params, assetID)
-	generateSQL.WriteString("SELECT * FROM assets WEHRE asset_id = ? AND deleted_at IS NULL; ")
+	generateSQL.WriteString("SELECT * FROM assets WHERE asset_id = ? AND deleted_at IS NULL; ")
 
 	var executeSQL *gorm.DB
 	executeSQL = a.UnderlyingDB().Raw(generateSQL.String(), params...).Take(&result) // ignore_security_alert

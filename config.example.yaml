@@ -7,11 +7,6 @@ auth:
   jwt_secret: "112233"
   mixin_client_secret: ".."
 
-aws:
-  key: ""
-  secret: ""
-  region: ""
-  bucket: ""
-
-sys:
-  attachment_base: "http://.."
+mixpay:
+  payee_id: ""
+  callback_url: "https://"

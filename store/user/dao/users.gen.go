@@ -233,7 +233,7 @@ func (u userDo) CreateUser(ctx context.Context, user *core.User) (result uint64,
 // UPDATE @@table
 //
 //	{{set}}
-//	  "name"=@user.FullName,
+//	  "full_name"=@user.FullName,
 //	  "avatar_url"=@user.AvatarURL,
 //	  "lang"=@user.Lang,
 //		"updated_at"=NOW()
@@ -251,7 +251,7 @@ func (u userDo) UpdateBasicInfo(ctx context.Context, id uint64, user *core.User)
 	params = append(params, user.FullName)
 	params = append(params, user.AvatarURL)
 	params = append(params, user.Lang)
-	setSQL0.WriteString("\"name\"=?, \"avatar_url\"=?, \"lang\"=?, \"updated_at\"=NOW() ")
+	setSQL0.WriteString("\"full_name\"=?, \"avatar_url\"=?, \"lang\"=?, \"updated_at\"=NOW() ")
 	helper.JoinSetBuilder(&generateSQL, setSQL0)
 	params = append(params, id)
 	generateSQL.WriteString("WHERE \"id\" = ? AND \"deleted_at\" IS NULL; ")

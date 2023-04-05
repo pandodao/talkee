@@ -13,10 +13,12 @@ import (
 	"talkee/handler/comment"
 	"talkee/handler/echo"
 	"talkee/handler/message"
+	"talkee/handler/payment"
 	"talkee/handler/render"
 	"talkee/handler/reply"
 	"talkee/handler/site"
 	"talkee/handler/stat"
+	"talkee/handler/tip"
 	"talkee/handler/user"
 	"talkee/session"
 
@@ -39,6 +41,8 @@ func New(cfg Config,
 	commentz core.CommentService,
 	replyz core.ReplyService,
 	assetz core.AssetService,
+	tipz core.TipService,
+
 	melody *melody.Melody,
 ) Server {
 	originCache := cache.New(time.Hour, time.Hour)
@@ -55,6 +59,7 @@ func New(cfg Config,
 		commentz: commentz,
 		replyz:   replyz,
 		assetz:   assetz,
+		tipz:     tipz,
 
 		originCache: originCache,
 		melody:      melody,
@@ -80,6 +85,7 @@ type (
 		commentz core.CommentService
 		replyz   core.ReplyService
 		assetz   core.AssetService
+		tipz     core.TipService
 
 		originCache *cache.Cache
 		melody      *melody.Melody
@@ -129,6 +135,10 @@ func (s Server) HandleRest() http.Handler {
 		r.Get("/", user.GetMe(s.users))
 	})
 
+	r.With(s.SiteRequired()).Route("/tips", func(r chi.Router) {
+		r.With(s.LoginRequired()).Post("/", tip.CreateTip(s.tipz))
+	})
+
 	r.With(s.SiteRequired()).Route("/comments", func(r chi.Router) {
 		r.Get("/", comment.GetComments(s.favourites, s.comments, s.commentz))
 		r.With(s.LoginRequired()).Post("/", comment.AddComment(s.commentz))
@@ -137,6 +147,10 @@ func (s Server) HandleRest() http.Handler {
 		r.With(s.LoginRequired()).Put("/{commentID}/unfav", comment.FavComment(s.commentz, false))
 		r.Get("/{commentID}/replies", reply.GetReplies(s.replys, s.replyz))
 		r.With(s.LoginRequired()).Post("/{commentID}/replies", reply.AddReply(s.replyz))
+	})
+
+	r.Route("/payments", func(r chi.Router) {
+		r.Post("/mixpay", payment.HandleMixpayWebhook(s.tipz))
 	})
 
 	return r

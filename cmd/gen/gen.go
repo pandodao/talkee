@@ -11,6 +11,7 @@ import (
 	_ "talkee/store/reward_task"
 	_ "talkee/store/site"
 	_ "talkee/store/snapshot"
+	_ "talkee/store/tip"
 	_ "talkee/store/user"
 
 	"github.com/spf13/cobra"
