@@ -100,9 +100,6 @@ func NewCmdWorker() *cobra.Command {
 			}, mixpayClient, tips, comments, rewards, commentz)
 
 			workers := []worker.Worker{
-				// reward task processer
-				// reward_task_processer.New(rewardz),
-
 				// tip delivery
 				tip_deliver.New(tips, tipz),
 
