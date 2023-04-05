@@ -48,7 +48,7 @@ func (w *Worker) Run(ctx context.Context) error {
 }
 
 func (w *Worker) run(ctx context.Context, circle int) error {
-	w.runInit(ctx)
+	w.runFilled(ctx)
 
 	if circle%10 == 0 {
 		go w.runPending(ctx)
@@ -57,14 +57,14 @@ func (w *Worker) run(ctx context.Context, circle int) error {
 	return nil
 }
 
-func (w *Worker) runInit(ctx context.Context) error {
+func (w *Worker) runFilled(ctx context.Context) error {
 	tps, err := w.tips.GetTipsByStatus(ctx, core.TipStatusFilled, 100)
 	if err != nil {
 		return err
 	}
 
 	for _, tp := range tps {
-		if err := w.tipz.ProcessInitTip(ctx, tp); err != nil {
+		if err := w.tipz.ProcessFilledTip(ctx, tp); err != nil {
 			return err
 		}
 	}

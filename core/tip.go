@@ -104,7 +104,7 @@ type (
 		CreateTip(ctx context.Context, tip *Tip, redirectURL string) (*Tip, error)
 		FillTipByMixpay(ctx context.Context, tipUUID string) (*Tip, error)
 
-		ProcessInitTip(ctx context.Context, tip *Tip) error
+		ProcessFilledTip(ctx context.Context, tip *Tip) error
 		ProcessCommentsType(ctx context.Context, tip *Tip) error
 		ProcessPendingTip(ctx context.Context, tip *Tip) error
 	}

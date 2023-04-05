@@ -203,11 +203,14 @@ func (s *CommentService) WithRewards(ctx context.Context, comments ...*core.Comm
 		return err
 	}
 
-	for _, r := range rewards {
-		for _, c := range comments {
+	for _, c := range comments {
+		for _, r := range rewards {
 			if r.ObjectID == c.ID {
-				c.Reward = r
+				c.Rewards = append(c.Rewards, r)
 			}
+		}
+		if len(c.Rewards) != 0 {
+			c.Reward = c.Rewards[0]
 		}
 	}
 

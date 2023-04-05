@@ -24,9 +24,10 @@ type (
 		UpdatedAt *time.Time `json:"updated_at"`
 		DeletedAt *time.Time `json:"-"`
 
-		Creator *User   `gorm:"-" json:"creator"`
-		Reward  *Reward `gorm:"-" json:"reward"`
-		FavID   uint64  `gorm:"-" json:"fav_id"`
+		Creator *User     `gorm:"-" json:"creator"`
+		Rewards []*Reward `gorm:"-" json:"rewards"`
+		Reward  *Reward   `gorm:"-" json:"reward"`
+		FavID   uint64    `gorm:"-" json:"fav_id"`
 	}
 
 	ArweaveSyncListItem struct {

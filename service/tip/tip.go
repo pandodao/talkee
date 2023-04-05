@@ -34,9 +34,9 @@ func New(
 }
 
 type Config struct {
-	ClientID                string
-	MixpayPayeeID           string
-	MixpayCallbackURL       string
+	ClientID          string
+	MixpayPayeeID     string
+	MixpayCallbackURL string
 }
 
 type service struct {
@@ -149,7 +149,7 @@ func (s *service) ProcessPendingTip(ctx context.Context, tip *core.Tip) error {
 	return nil
 }
 
-func (s *service) ProcessInitTip(ctx context.Context, tip *core.Tip) error {
+func (s *service) ProcessFilledTip(ctx context.Context, tip *core.Tip) error {
 	switch tip.TipType {
 	case core.TipTypeComments:
 		return s.ProcessCommentsType(ctx, tip)

@@ -80,7 +80,7 @@ func (w *Worker) Run(ctx context.Context) error {
 
 func (w *Worker) run(ctx context.Context, circle int64) error {
 
-	if circle%60 == 0 {
+	if circle%300 == 0 {
 		if err := w.updateAssets(ctx); err != nil {
 			return err
 		}
