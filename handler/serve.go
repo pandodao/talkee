@@ -135,7 +135,7 @@ func (s Server) HandleRest() http.Handler {
 		r.Get("/", user.GetMe(s.users))
 	})
 
-	r.With(s.SiteRequired()).Route("/tips", func(r chi.Router) {
+	r.With(s.SiteRequired()).Route("/airdrops", func(r chi.Router) {
 		r.With(s.LoginRequired()).Post("/", tip.CreateTip(s.tipz))
 	})
 

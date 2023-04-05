@@ -155,7 +155,7 @@ type ITipDo interface {
 // (
 // "uuid", "user_id",
 //
-//	"site_id", "slug", "tip_type",
+//	"site_id", "slug", "airdrop_type",
 //	"strategy_name", "strategy_params",
 //	"asset_id", "amount", "memo",
 //	"status", "created_at", "updated_at"
@@ -165,7 +165,7 @@ type ITipDo interface {
 // (
 //
 //	@tip.UUID, @tip.UserID,
-//	@tip.SiteID, @tip.Slug, @tip.TipType,
+//	@tip.SiteID, @tip.Slug, @tip.AirdropType,
 //	@tip.StrategyName, @tip.StrategyParams,
 //	@tip.AssetID, @tip.Amount, @tip.Memo,
 //	0, NOW(), NOW()
@@ -180,13 +180,13 @@ func (t tipDo) CreateTip(ctx context.Context, tip *core.Tip) (result uint64, err
 	params = append(params, tip.UserID)
 	params = append(params, tip.SiteID)
 	params = append(params, tip.Slug)
-	params = append(params, tip.TipType)
+	params = append(params, tip.AirdropType)
 	params = append(params, tip.StrategyName)
 	params = append(params, tip.StrategyParams)
 	params = append(params, tip.AssetID)
 	params = append(params, tip.Amount)
 	params = append(params, tip.Memo)
-	generateSQL.WriteString("INSERT INTO \"tips\" ( \"uuid\", \"user_id\", \"site_id\", \"slug\", \"tip_type\", \"strategy_name\", \"strategy_params\", \"asset_id\", \"amount\", \"memo\", \"status\", \"created_at\", \"updated_at\" ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, NOW(), NOW() ) RETURNING \"id\"; ")
+	generateSQL.WriteString("INSERT INTO \"tips\" ( \"uuid\", \"user_id\", \"site_id\", \"slug\", \"airdrop_type\", \"strategy_name\", \"strategy_params\", \"asset_id\", \"amount\", \"memo\", \"status\", \"created_at\", \"updated_at\" ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, NOW(), NOW() ) RETURNING \"id\"; ")
 
 	var executeSQL *gorm.DB
 	executeSQL = t.UnderlyingDB().Raw(generateSQL.String(), params...).Take(&result) // ignore_security_alert

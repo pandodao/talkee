@@ -8,7 +8,7 @@ CREATE TABLE "tips" (
   "user_id" bigint NOT NULL,
   "site_id" bigint NOT NULL,
   "slug" varchar(255) NOT NULL,
-  "tip_type" varchar(255) NOT NULL,
+  "airdrop_type" varchar(255) NOT NULL,
   "strategy_name" varchar(255) NOT NULL,
   "strategy_params" jsonb DEFAULT '{}'::jsonb,
   "asset_id" varchar(36) NOT NULL,

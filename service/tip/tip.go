@@ -150,14 +150,14 @@ func (s *service) ProcessPendingTip(ctx context.Context, tip *core.Tip) error {
 }
 
 func (s *service) ProcessFilledTip(ctx context.Context, tip *core.Tip) error {
-	switch tip.TipType {
-	case core.TipTypeComments:
+	switch tip.AirdropType {
+	case core.AirdropTypeComments:
 		return s.ProcessCommentsType(ctx, tip)
-	case core.TipTypeSlug:
+	case core.AirdropTypeSlug:
 		// @TODO
-	case core.TipTypeComment:
+	case core.AirdropTypeComment:
 		// @TODO
-	case core.TipTypeUser:
+	case core.AirdropTypeUser:
 		// @TODO
 	}
 
