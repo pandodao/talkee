@@ -25,7 +25,7 @@ type LoginPayload struct {
 	Lang          string `json:"lang"`
 }
 
-func Login(s *session.Session, userz core.UserService) http.HandlerFunc {
+func Login(s *session.Session, userz core.UserService, clientID string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
@@ -35,17 +35,11 @@ func Login(s *session.Session, userz core.UserService) http.HandlerFunc {
 			return
 		}
 
-		cli, err := s.GetClient()
-		if err != nil {
-			render.Error(w, http.StatusBadRequest, err)
-			return
-		}
-
 		origin := r.Header.Get("Origin")
 		domain := strings.Split(origin, "//")[1]
 
 		authorizer := auth.New([]string{
-			cli.ClientID,
+			clientID,
 		}, []string{
 			domain,
 		})

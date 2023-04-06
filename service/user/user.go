@@ -34,7 +34,10 @@ type UserService struct {
 }
 
 func (s *UserService) LoginWithMixin(ctx context.Context, authUser *auth.User, lang string) (*core.User, error) {
-	if lang == "" {
+
+	if len(lang) >= 2 {
+		lang = strings.ToLower(lang[:2])
+	} else {
 		lang = "en"
 	}
 
@@ -73,12 +76,6 @@ func (s *UserService) LoginWithMixin(ctx context.Context, authUser *auth.User, l
 	}
 
 	// update
-	if len(user.Lang) >= 2 {
-		user.Lang = strings.ToLower(lang[:2])
-	} else {
-		user.Lang = "en"
-	}
-
 	if err := s.users.UpdateBasicInfo(ctx, existing.ID, user); err != nil {
 		fmt.Printf("err users.Updates: %v\n", err)
 		return nil, err

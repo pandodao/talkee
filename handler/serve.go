@@ -69,6 +69,7 @@ func New(cfg Config,
 
 type (
 	Config struct {
+		ClientID string
 	}
 
 	Server struct {
@@ -118,7 +119,7 @@ func (s Server) HandleRest() http.Handler {
 	})
 
 	r.Route("/auth", func(r chi.Router) {
-		r.Post("/login", auth.Login(s.session, s.userz))
+		r.Post("/login", auth.Login(s.session, s.userz, s.cfg.ClientID))
 	})
 
 	r.Route("/sites", func(r chi.Router) {

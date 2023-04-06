@@ -85,9 +85,9 @@ func NewCmdHttpd() *cobra.Command {
 			replyz := replyServ.New(replys, comments, users, replyServ.Config{})
 			assetz := assetServ.New(client, assets)
 			tipz := tipServ.New(tipServ.Config{
-				ClientID:                client.ClientID,
-				MixpayPayeeID:           cfg.Mixpay.PayeeID,
-				MixpayCallbackURL:       cfg.Mixpay.CallbackURL,
+				ClientID:          client.ClientID,
+				MixpayPayeeID:     cfg.Mixpay.PayeeID,
+				MixpayCallbackURL: cfg.Mixpay.CallbackURL,
 			}, mixpayClient, tips, comments, rewards, commentz)
 
 			mux := chi.NewMux()
@@ -110,7 +110,9 @@ func NewCmdHttpd() *cobra.Command {
 
 			// rpc & api
 			{
-				cfg := handler.Config{}
+				cfg := handler.Config{
+					ClientID: client.ClientID,
+				}
 				svr := handler.New(cfg, s,
 					propertys,
 					comments, users, sites, replys, assets, favourites, userz, commentz, replyz, assetz, tipz, nil)
