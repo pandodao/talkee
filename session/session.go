@@ -9,6 +9,7 @@ import (
 	"github.com/everFinance/goar"
 	"github.com/fox-one/mixin-sdk-go"
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/pandodao/passport-go/auth"
 	"github.com/patrickmn/go-cache"
 )
 
@@ -93,8 +94,8 @@ func (s *Session) GetArwallet() (*goar.Wallet, error) {
 	return wallet, nil
 }
 
-func (s *Session) LoginWithMixin(ctx context.Context, userz core.UserService, token, pubkey, lang string) (*core.User, string, error) {
-	user, err := userz.LoginWithMixin(ctx, token, pubkey, lang)
+func (s *Session) LoginWithMixin(ctx context.Context, userz core.UserService, authUser *auth.User, lang string) (*core.User, string, error) {
+	user, err := userz.LoginWithMixin(ctx, authUser, lang)
 	if err != nil {
 		return nil, "", err
 	}

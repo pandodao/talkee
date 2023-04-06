@@ -3,6 +3,8 @@ package core
 import (
 	"context"
 	"time"
+
+	"github.com/pandodao/passport-go/auth"
 )
 
 const (
@@ -74,7 +76,7 @@ type (
 		UpdateBasicInfo(ctx context.Context, id uint64, user *User) error
 	}
 	UserService interface {
-		LoginWithMixin(ctx context.Context, token, pubkey, lang string) (*User, error)
+		LoginWithMixin(ctx context.Context, authUser *auth.User, lang string) (*User, error)
 	}
 )
 
