@@ -88,7 +88,7 @@ func NewCmdHttpd() *cobra.Command {
 				ClientID:          client.ClientID,
 				MixpayPayeeID:     cfg.Mixpay.PayeeID,
 				MixpayCallbackURL: cfg.Mixpay.CallbackURL,
-			}, mixpayClient, tips, comments, rewards, commentz)
+			}, mixpayClient, tips, comments, rewards, users, sites, commentz)
 
 			mux := chi.NewMux()
 			mux.Use(middleware.Recoverer)

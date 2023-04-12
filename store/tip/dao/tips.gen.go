@@ -29,6 +29,7 @@ func newTip(db *gorm.DB, opts ...gen.DOOption) tip {
 	_tip.UserID = field.NewUint64(tableName, "user_id")
 	_tip.SiteID = field.NewUint64(tableName, "site_id")
 	_tip.Slug = field.NewString(tableName, "slug")
+	_tip.OpponentID = field.NewUint64(tableName, "opponent_id")
 	_tip.AirdropType = field.NewString(tableName, "airdrop_type")
 	_tip.StrategyName = field.NewString(tableName, "strategy_name")
 	_tip.StrategyParams = field.NewField(tableName, "strategy_params")
@@ -54,6 +55,7 @@ type tip struct {
 	UserID         field.Uint64
 	SiteID         field.Uint64
 	Slug           field.String
+	OpponentID     field.Uint64
 	AirdropType    field.String
 	StrategyName   field.String
 	StrategyParams field.Field
@@ -85,6 +87,7 @@ func (t *tip) updateTableName(table string) *tip {
 	t.UserID = field.NewUint64(table, "user_id")
 	t.SiteID = field.NewUint64(table, "site_id")
 	t.Slug = field.NewString(table, "slug")
+	t.OpponentID = field.NewUint64(table, "opponent_id")
 	t.AirdropType = field.NewString(table, "airdrop_type")
 	t.StrategyName = field.NewString(table, "strategy_name")
 	t.StrategyParams = field.NewField(table, "strategy_params")
@@ -111,12 +114,13 @@ func (t *tip) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (t *tip) fillFieldMap() {
-	t.fieldMap = make(map[string]field.Expr, 15)
+	t.fieldMap = make(map[string]field.Expr, 16)
 	t.fieldMap["id"] = t.ID
 	t.fieldMap["uuid"] = t.UUID
 	t.fieldMap["user_id"] = t.UserID
 	t.fieldMap["site_id"] = t.SiteID
 	t.fieldMap["slug"] = t.Slug
+	t.fieldMap["opponent_id"] = t.OpponentID
 	t.fieldMap["airdrop_type"] = t.AirdropType
 	t.fieldMap["strategy_name"] = t.StrategyName
 	t.fieldMap["strategy_params"] = t.StrategyParams
@@ -155,7 +159,7 @@ type ITipDo interface {
 // (
 // "uuid", "user_id",
 //
-//	"site_id", "slug", "airdrop_type",
+//	"site_id", "slug", "opponent_id", "airdrop_type",
 //	"strategy_name", "strategy_params",
 //	"asset_id", "amount", "memo",
 //	"status", "created_at", "updated_at"
@@ -165,7 +169,7 @@ type ITipDo interface {
 // (
 //
 //	@tip.UUID, @tip.UserID,
-//	@tip.SiteID, @tip.Slug, @tip.AirdropType,
+//	@tip.SiteID, @tip.Slug, @tip.OpponentID, @tip.AirdropType,
 //	@tip.StrategyName, @tip.StrategyParams,
 //	@tip.AssetID, @tip.Amount, @tip.Memo,
 //	0, NOW(), NOW()
@@ -180,13 +184,14 @@ func (t tipDo) CreateTip(ctx context.Context, tip *core.Tip) (result uint64, err
 	params = append(params, tip.UserID)
 	params = append(params, tip.SiteID)
 	params = append(params, tip.Slug)
+	params = append(params, tip.OpponentID)
 	params = append(params, tip.AirdropType)
 	params = append(params, tip.StrategyName)
 	params = append(params, tip.StrategyParams)
 	params = append(params, tip.AssetID)
 	params = append(params, tip.Amount)
 	params = append(params, tip.Memo)
-	generateSQL.WriteString("INSERT INTO \"tips\" ( \"uuid\", \"user_id\", \"site_id\", \"slug\", \"airdrop_type\", \"strategy_name\", \"strategy_params\", \"asset_id\", \"amount\", \"memo\", \"status\", \"created_at\", \"updated_at\" ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, NOW(), NOW() ) RETURNING \"id\"; ")
+	generateSQL.WriteString("INSERT INTO \"tips\" ( \"uuid\", \"user_id\", \"site_id\", \"slug\", \"opponent_id\", \"airdrop_type\", \"strategy_name\", \"strategy_params\", \"asset_id\", \"amount\", \"memo\", \"status\", \"created_at\", \"updated_at\" ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, NOW(), NOW() ) RETURNING \"id\"; ")
 
 	var executeSQL *gorm.DB
 	executeSQL = t.UnderlyingDB().Raw(generateSQL.String(), params...).Take(&result) // ignore_security_alert

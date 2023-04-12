@@ -11,9 +11,9 @@ var (
 	RewardStatusCreated  = "created"
 	RewardStatusRewarded = "rewarded"
 
+	RewardObjectTypeUser    = "user"
 	RewardObjectTypeSlug    = "slug"
 	RewardObjectTypeComment = "comment"
-	RewardObjectTypeFavour  = "favour"
 )
 
 type (

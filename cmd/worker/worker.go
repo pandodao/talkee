@@ -21,6 +21,7 @@ import (
 	"talkee/store/favourite"
 	"talkee/store/property"
 	"talkee/store/reward"
+	"talkee/store/site"
 	"talkee/store/snapshot"
 	"talkee/store/tip"
 	"talkee/store/user"
@@ -82,6 +83,7 @@ func NewCmdWorker() *cobra.Command {
 			rewards := reward.New(h)
 			favourites := favourite.New(h)
 			tips := tip.New(h)
+			sites := site.New(h)
 
 			commentz := commentServ.New(arWallet, comments, rewards, users, commentServ.Config{
 				AppName: cfg.AppName,
@@ -97,7 +99,7 @@ func NewCmdWorker() *cobra.Command {
 				ClientID:          client.ClientID,
 				MixpayPayeeID:     cfg.Mixpay.PayeeID,
 				MixpayCallbackURL: cfg.Mixpay.CallbackURL,
-			}, mixpayClient, tips, comments, rewards, commentz)
+			}, mixpayClient, tips, comments, rewards, users, sites, commentz)
 
 			workers := []worker.Worker{
 				// tip delivery

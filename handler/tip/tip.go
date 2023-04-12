@@ -14,6 +14,7 @@ import (
 type CreateTipPayload struct {
 	SiteID         uint64                 `json:"site_id"`
 	Slug           string                 `json:"slug"`
+	OpponentID     uint64                 `json:"opponent_id"`
 	AirdropType    string                 `json:"airdrop_type"`
 	StrategyName   string                 `json:"strategy_name"`
 	StrategyParams map[string]interface{} `json:"strategy_params"`
@@ -38,11 +39,16 @@ func CreateTip(tipz core.TipService) http.HandlerFunc {
 			return
 		}
 
+		if body.StrategyParams == nil {
+			body.StrategyParams = make(map[string]interface{})
+		}
+
 		tip, err := tipz.CreateTip(ctx, &core.Tip{
 			UUID:           uuid.New(),
 			UserID:         user.ID,
 			SiteID:         body.SiteID,
 			Slug:           body.Slug,
+			OpponentID:     body.OpponentID,
 			AirdropType:    body.AirdropType,
 			StrategyName:   body.StrategyName,
 			StrategyParams: body.StrategyParams,

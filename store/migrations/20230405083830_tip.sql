@@ -6,8 +6,9 @@ CREATE TABLE "tips" (
   "id" BIGSERIAL PRIMARY KEY,
   "uuid" varchar(36) NOT NULL,
   "user_id" bigint NOT NULL,
-  "site_id" bigint NOT NULL,
-  "slug" varchar(255) NOT NULL,
+  "site_id" bigint,
+  "opponent_id" bigint,
+  "slug" varchar(255),
   "airdrop_type" varchar(255) NOT NULL,
   "strategy_name" varchar(255) NOT NULL,
   "strategy_params" jsonb DEFAULT '{}'::jsonb,
@@ -21,6 +22,7 @@ CREATE TABLE "tips" (
 );
 CREATE INDEX "idx_tip_uuid" ON "tips" ("uuid", "deleted_at");
 CREATE INDEX "idx_tip_status" ON "tips" ("status", "deleted_at");
+CREATE INDEX "idx_tip_opponent" ON "tips" ("opponent_id", "deleted_at");
 
 ALTER TABLE "rewards" ADD COLUMN "tip_id" bigint default 0 NOT NULL;
 ALTER TABLE "rewards" ADD COLUMN "memo" varchar(255) default '' NOT NULL;

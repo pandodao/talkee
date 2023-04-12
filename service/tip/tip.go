@@ -21,6 +21,8 @@ func New(
 	tips core.TipStore,
 	comments core.CommentStore,
 	rewards core.RewardStore,
+	users core.UserStore,
+	sites core.SiteStore,
 	commentz core.CommentService,
 ) *service {
 	return &service{
@@ -29,6 +31,8 @@ func New(
 		tips:         tips,
 		comments:     comments,
 		rewards:      rewards,
+		users:        users,
+		sites:        sites,
 		commentz:     commentz,
 	}
 }
@@ -45,6 +49,8 @@ type service struct {
 	tips         core.TipStore
 	comments     core.CommentStore
 	rewards      core.RewardStore
+	users        core.UserStore
+	sites        core.SiteStore
 	commentz     core.CommentService
 }
 
@@ -154,14 +160,139 @@ func (s *service) ProcessFilledTip(ctx context.Context, tip *core.Tip) error {
 	case core.AirdropTypeComments:
 		return s.ProcessCommentsType(ctx, tip)
 	case core.AirdropTypeSlug:
-		// @TODO
+		return s.ProcessSlugType(ctx, tip)
 	case core.AirdropTypeComment:
-		// @TODO
+		return s.ProcessCommentType(ctx, tip)
 	case core.AirdropTypeUser:
-		// @TODO
+		return s.ProcessUserType(ctx, tip)
 	}
 
 	return core.ErrUnsupportedTipType
+}
+
+func (s *service) ProcessSlugType(ctx context.Context, tp *core.Tip) error {
+	if tp.SiteID != 0 {
+		site, err := s.sites.GetSite(ctx, tp.SiteID)
+		if err != nil {
+			return err
+		}
+
+		owner, err := s.users.GetUser(ctx, site.UserID)
+		if err != nil {
+			return err
+		}
+
+		if err := store.Transaction(func(tx *store.Handler) error {
+			rewards := reward.New(tx)
+			tips := tip.New(tx)
+
+			rw := &core.Reward{
+				ObjectType:  core.RewardObjectTypeSlug,
+				ObjectID:    site.ID,
+				RecipientID: owner.MixinUserID,
+				Amount:      tp.Amount,
+				TipID:       tp.ID,
+				Memo:        tp.Memo,
+				SiteID:      tp.SiteID,
+				AssetID:     tp.AssetID,
+				Status:      core.RewardStatusCreated,
+			}
+
+			rw.TraceID = uuid.Modify(s.cfg.ClientID, fmt.Sprintf("reward-generated-by(%d, %s, %d)", tp.ID, rw.ObjectType, rw.ObjectID))
+			if err := rewards.CreateReward(ctx, rw); err != nil {
+				return err
+			}
+
+			if err := tips.UpdateTipStatus(ctx, tp.ID, core.TipStatusPending); err != nil {
+				return err
+			}
+
+			return nil
+		}); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (s *service) ProcessUserType(ctx context.Context, tp *core.Tip) error {
+	if tp.OpponentID != 0 {
+		user, err := s.users.GetUser(ctx, tp.OpponentID)
+		if err != nil {
+			return err
+		}
+
+		if err := store.Transaction(func(tx *store.Handler) error {
+			rewards := reward.New(tx)
+			tips := tip.New(tx)
+
+			rw := &core.Reward{
+				ObjectType:  core.RewardObjectTypeUser,
+				ObjectID:    tp.OpponentID,
+				RecipientID: user.MixinUserID,
+				Amount:      tp.Amount,
+				TipID:       tp.ID,
+				Memo:        tp.Memo,
+				SiteID:      tp.SiteID,
+				AssetID:     tp.AssetID,
+				Status:      core.RewardStatusCreated,
+			}
+
+			rw.TraceID = uuid.Modify(s.cfg.ClientID, fmt.Sprintf("reward-generated-by(%d, %s, %d)", tp.ID, rw.ObjectType, rw.ObjectID))
+			if err := rewards.CreateReward(ctx, rw); err != nil {
+				return err
+			}
+
+			if err := tips.UpdateTipStatus(ctx, tp.ID, core.TipStatusPending); err != nil {
+				return err
+			}
+
+			return nil
+		}); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (s *service) ProcessCommentType(ctx context.Context, tp *core.Tip) error {
+	if tp.OpponentID != 0 {
+		cmt, err := s.commentz.GetCommentWithReward(ctx, tp.OpponentID)
+		if err != nil {
+			return err
+		}
+
+		if err := store.Transaction(func(tx *store.Handler) error {
+			rewards := reward.New(tx)
+			tips := tip.New(tx)
+
+			rw := &core.Reward{
+				ObjectType:  core.RewardObjectTypeComment,
+				ObjectID:    cmt.ID,
+				RecipientID: cmt.Creator.MixinUserID,
+				Amount:      tp.Amount,
+				TipID:       tp.ID,
+				Memo:        tp.Memo,
+				SiteID:      tp.SiteID,
+				AssetID:     tp.AssetID,
+				Status:      core.RewardStatusCreated,
+			}
+
+			rw.TraceID = uuid.Modify(s.cfg.ClientID, fmt.Sprintf("reward-generated-by(%d, %s, %d)", tp.ID, rw.ObjectType, rw.ObjectID))
+			if err := rewards.CreateReward(ctx, rw); err != nil {
+				return err
+			}
+
+			if err := tips.UpdateTipStatus(ctx, tp.ID, core.TipStatusPending); err != nil {
+				return err
+			}
+
+			return nil
+		}); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (s *service) ProcessCommentsType(ctx context.Context, tp *core.Tip) error {
