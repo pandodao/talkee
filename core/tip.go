@@ -99,7 +99,9 @@ type (
 		// SELECT
 		//  *
 		// FROM "tips" WHERE
-		//  "site_id" = @siteID AND "slug" = @slug AND "status"=3 AND "deleted_at" IS NULL
+		//  "site_id" = @siteID AND "slug" = @slug AND
+		//  "airdrop_type" = 'slug' AND
+		//  "status"=3 AND "deleted_at" IS NULL
 		// ORDER BY "id" ASC
 		// LIMIT @limit
 		GetTipsBySlug(ctx context.Context, siteID uint64, slug string, limit int) ([]*Tip, error)

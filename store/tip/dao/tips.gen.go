@@ -263,7 +263,9 @@ func (t tipDo) GetTipsByStatus(ctx context.Context, status int, limit int) (resu
 // SELECT
 // *
 // FROM "tips" WHERE
-// "site_id" = @siteID AND "slug" = @slug AND "status"=3 AND "deleted_at" IS NULL
+// "site_id" = @siteID AND "slug" = @slug AND
+// "airdrop_type" = 'slug' AND
+// "status"=3 AND "deleted_at" IS NULL
 // ORDER BY "id" ASC
 // LIMIT @limit
 func (t tipDo) GetTipsBySlug(ctx context.Context, siteID uint64, slug string, limit int) (result []*core.Tip, err error) {
@@ -273,7 +275,7 @@ func (t tipDo) GetTipsBySlug(ctx context.Context, siteID uint64, slug string, li
 	params = append(params, siteID)
 	params = append(params, slug)
 	params = append(params, limit)
-	generateSQL.WriteString("SELECT * FROM \"tips\" WHERE \"site_id\" = ? AND \"slug\" = ? AND \"status\"=3 AND \"deleted_at\" IS NULL ORDER BY \"id\" ASC LIMIT ? ")
+	generateSQL.WriteString("SELECT * FROM \"tips\" WHERE \"site_id\" = ? AND \"slug\" = ? AND \"airdrop_type\" = 'slug' AND \"status\"=3 AND \"deleted_at\" IS NULL ORDER BY \"id\" ASC LIMIT ? ")
 
 	var executeSQL *gorm.DB
 	executeSQL = t.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert
