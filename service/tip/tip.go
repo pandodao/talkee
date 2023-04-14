@@ -140,6 +140,41 @@ func (s *service) FillTipByMixpay(ctx context.Context, tipUUID string) (*core.Ti
 	return tp, nil
 }
 
+func (s *service) GetTipsBySlug(ctx context.Context, siteID uint64, slug string, limit int) ([]*core.Tip, error) {
+	tps, err := s.tips.GetTipsBySlug(ctx, siteID, slug, limit)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := s.WithUsers(ctx, tps...); err != nil {
+		return nil, err
+	}
+
+	return tps, nil
+}
+
+func (s *service) WithUsers(ctx context.Context, tps ...*core.Tip) error {
+	userIDs := []uint64{}
+	for _, tp := range tps {
+		userIDs = append(userIDs, tp.UserID)
+	}
+
+	users, err := s.users.GetUserByIDs(ctx, userIDs)
+	if err != nil {
+		return err
+	}
+
+	for _, tp := range tps {
+		for _, u := range users {
+			if u.ID == tp.UserID {
+				tp.User = u
+			}
+		}
+	}
+
+	return nil
+}
+
 func (s *service) ProcessPendingTip(ctx context.Context, tip *core.Tip) error {
 	rs, err := s.rewards.GetRewardsByTipIDAndStatus(ctx, tip.ID, core.RewardStatusCreated)
 	if err != nil {

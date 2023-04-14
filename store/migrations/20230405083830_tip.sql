@@ -22,7 +22,8 @@ CREATE TABLE "tips" (
 );
 CREATE INDEX "idx_tip_uuid" ON "tips" ("uuid", "deleted_at");
 CREATE INDEX "idx_tip_status" ON "tips" ("status", "deleted_at");
-CREATE INDEX "idx_tip_opponent" ON "tips" ("opponent_id", "deleted_at");
+CREATE INDEX "idx_tip_opponent" ON "tips" ("opponent_id", "status", "deleted_at");
+CREATE INDEX "idx_tip_slug" ON "tips" ("site_id", "slug", "status", "deleted_at");
 
 ALTER TABLE "rewards" ADD COLUMN "tip_id" bigint default 0 NOT NULL;
 ALTER TABLE "rewards" ADD COLUMN "memo" varchar(255) default '' NOT NULL;

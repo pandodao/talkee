@@ -20,6 +20,7 @@ import (
 	"talkee/handler/stat"
 	"talkee/handler/tip"
 	"talkee/handler/user"
+	"talkee/handler/slug"
 	"talkee/session"
 
 	"github.com/go-chi/chi"
@@ -139,6 +140,10 @@ func (s Server) HandleRest() http.Handler {
 
 	r.With(s.SiteRequired()).Route("/airdrops", func(r chi.Router) {
 		r.With(s.LoginRequired()).Post("/", tip.CreateTip(s.tipz))
+	})
+
+	r.With(s.SiteRequired()).Route("/slugs", func(r chi.Router) {
+		r.Get("/", slug.GetSlug(s.tipz))
 	})
 
 	r.With(s.SiteRequired()).Route("/comments", func(r chi.Router) {

@@ -152,6 +152,7 @@ type ITipDo interface {
 	GetTip(ctx context.Context, id uint64) (result *core.Tip, err error)
 	GetTipByUUID(ctx context.Context, uuid string) (result *core.Tip, err error)
 	GetTipsByStatus(ctx context.Context, status int, limit int) (result []*core.Tip, err error)
+	GetTipsBySlug(ctx context.Context, siteID uint64, slug string, limit int) (result []*core.Tip, err error)
 	UpdateTipStatus(ctx context.Context, id uint64, status int) (err error)
 }
 
@@ -242,7 +243,7 @@ func (t tipDo) GetTipByUUID(ctx context.Context, uuid string) (result *core.Tip,
 // *
 // FROM "tips" WHERE
 // "status" = @status AND "deleted_at" IS NULL
-// ORDER BY "id" DESC
+// ORDER BY "id" ASC
 // LIMIT @limit
 func (t tipDo) GetTipsByStatus(ctx context.Context, status int, limit int) (result []*core.Tip, err error) {
 	var params []interface{}
@@ -250,7 +251,29 @@ func (t tipDo) GetTipsByStatus(ctx context.Context, status int, limit int) (resu
 	var generateSQL strings.Builder
 	params = append(params, status)
 	params = append(params, limit)
-	generateSQL.WriteString("SELECT * FROM \"tips\" WHERE \"status\" = ? AND \"deleted_at\" IS NULL ORDER BY \"id\" DESC LIMIT ? ")
+	generateSQL.WriteString("SELECT * FROM \"tips\" WHERE \"status\" = ? AND \"deleted_at\" IS NULL ORDER BY \"id\" ASC LIMIT ? ")
+
+	var executeSQL *gorm.DB
+	executeSQL = t.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert
+	err = executeSQL.Error
+
+	return
+}
+
+// SELECT
+// *
+// FROM "tips" WHERE
+// "site_id" = @siteID AND "slug" = @slug AND "status"=3 AND "deleted_at" IS NULL
+// ORDER BY "id" ASC
+// LIMIT @limit
+func (t tipDo) GetTipsBySlug(ctx context.Context, siteID uint64, slug string, limit int) (result []*core.Tip, err error) {
+	var params []interface{}
+
+	var generateSQL strings.Builder
+	params = append(params, siteID)
+	params = append(params, slug)
+	params = append(params, limit)
+	generateSQL.WriteString("SELECT * FROM \"tips\" WHERE \"site_id\" = ? AND \"slug\" = ? AND \"status\"=3 AND \"deleted_at\" IS NULL ORDER BY \"id\" ASC LIMIT ? ")
 
 	var executeSQL *gorm.DB
 	executeSQL = t.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert

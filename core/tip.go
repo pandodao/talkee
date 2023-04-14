@@ -37,20 +37,21 @@ type (
 		UserID         uint64          `json:"user_id"`
 		SiteID         uint64          `json:"site_id"`
 		Slug           string          `json:"slug"`
-		OpponentID     uint64          `json:"opponent_id"`
-		AirdropType    string          `json:"airdrop_type"`
-		StrategyName   string          `json:"strategy_name"`
-		StrategyParams StrategyParams  `gorm:"type:jsonb" json:"strategy_params"`
+		OpponentID     uint64          `json:"-"`
+		AirdropType    string          `json:"-"`
+		StrategyName   string          `json:"-"`
+		StrategyParams StrategyParams  `gorm:"type:jsonb" json:"-"`
 		AssetID        string          `json:"asset_id"`
 		Amount         decimal.Decimal `json:"amount"`
 		Memo           string          `json:"memo"`
-		Status         int             `json:"status"`
+		Status         int             `json:"-"`
 
 		CreatedAt *time.Time `json:"created_at"`
-		UpdatedAt *time.Time `json:"updated_at"`
-		DeletedAt *time.Time `json:"deleted_at"`
+		UpdatedAt *time.Time `json:"-"`
+		DeletedAt *time.Time `json:"-"`
 
 		MixpayCode string `gorm:"-" json:"mixpay_code"`
+		User       *User  `gorm:"-" json:"user"`
 	}
 
 	TipStore interface {
@@ -91,9 +92,17 @@ type (
 		//  *
 		// FROM "tips" WHERE
 		//  "status" = @status AND "deleted_at" IS NULL
-		// ORDER BY "id" DESC
+		// ORDER BY "id" ASC
 		// LIMIT @limit
 		GetTipsByStatus(ctx context.Context, status, limit int) ([]*Tip, error)
+
+		// SELECT
+		//  *
+		// FROM "tips" WHERE
+		//  "site_id" = @siteID AND "slug" = @slug AND "status"=3 AND "deleted_at" IS NULL
+		// ORDER BY "id" ASC
+		// LIMIT @limit
+		GetTipsBySlug(ctx context.Context, siteID uint64, slug string, limit int) ([]*Tip, error)
 
 		// UPDATE "tips" SET
 		// "status" = @status,
@@ -105,6 +114,7 @@ type (
 	TipService interface {
 		CreateTip(ctx context.Context, tip *Tip, redirectURL string) (*Tip, error)
 		FillTipByMixpay(ctx context.Context, tipUUID string) (*Tip, error)
+		GetTipsBySlug(ctx context.Context, siteID uint64, slug string, limit int) ([]*Tip, error)
 
 		ProcessFilledTip(ctx context.Context, tip *Tip) error
 		ProcessCommentsType(ctx context.Context, tip *Tip) error

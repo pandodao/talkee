@@ -54,11 +54,6 @@ func NewCmdWorker() *cobra.Command {
 
 			s := session.From(ctx)
 
-			// keystore, err := s.GetKeystore()
-			// if err != nil {
-			// 	return err
-			// }
-
 			client, err := s.GetClient()
 			if err != nil {
 				return err
@@ -74,7 +69,6 @@ func NewCmdWorker() *cobra.Command {
 			propertys := property.New(h)
 
 			assets := asset.New(h)
-			// snapshots := snapshot.New(h)
 			users := user.New(h)
 			comments := comment.New(h)
 			rewards := reward.New(h)
@@ -91,7 +85,6 @@ func NewCmdWorker() *cobra.Command {
 			rewardz := rewardServ.New(rewards, favourites, comments, client, rewardServCfg)
 
 			assetz := assetServ.New(client, assets)
-			// snapshotz := snapshotServ.New(client)
 			tipz := tipServ.New(tipServ.Config{
 				ClientID:          client.ClientID,
 				MixpayPayeeID:     cfg.Mixpay.PayeeID,
@@ -111,7 +104,7 @@ func NewCmdWorker() *cobra.Command {
 				// timer
 				timer.New(timer.Config{}, propertys, comments, favourites, rewards, assets, assetz),
 
-				// syncer
+				// syncer, disabled.
 				// syncer.New(syncer.Config{
 				// 	ClientID: keystore.ClientID,
 				// }, propertys, snapshots, users, snapshotz),

@@ -29,9 +29,9 @@ type (
 		AssetID     string          `json:"asset_id"`
 		Amount      decimal.Decimal `json:"amount"`
 		Memo        string          `json:"memo"`
-		Status      string          `json:"status"`
+		Status      string          `json:"-"`
 		CreatedAt   *time.Time      `json:"created_at"`
-		UpdatedAt   *time.Time      `json:"updated_at"`
+		UpdatedAt   *time.Time      `json:"-"`
 	}
 
 	SumRewardItem struct {
