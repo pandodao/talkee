@@ -5,6 +5,7 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"errors"
+	"talkee/util"
 	"time"
 
 	"github.com/shopspring/decimal"
@@ -121,7 +122,7 @@ func (t Tip) Validate() error {
 	if t.AssetID == "" {
 		return ErrInvalidTipParams
 	}
-	if t.Amount.IsZero() {
+	if t.Amount.IsZero() || t.Amount.LessThan(util.OneSatoshi) {
 		return ErrInvalidTipParams
 	}
 	if t.AirdropType != AirdropTypeSlug && t.AirdropType != AirdropTypeComments && t.AirdropType != AirdropTypeComment && t.AirdropType != AirdropTypeUser {

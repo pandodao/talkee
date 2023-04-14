@@ -1,6 +1,7 @@
 package payment
 
 import (
+	"fmt"
 	"net/http"
 
 	"talkee/core"
@@ -24,8 +25,14 @@ func HandleMixpayWebhook(tipz core.TipService) http.HandlerFunc {
 			render.Error(w, http.StatusBadRequest, err)
 			return
 		}
+		fmt.Printf("mixpay callback resp: %+v\n", body)
 
-		if _, err := tipz.FillTipByMixpay(ctx, body.OrderID); err != nil {
+		id := body.TraceID
+		if id == "" {
+			id = body.OrderID
+		}
+
+		if _, err := tipz.FillTipByMixpay(ctx, id); err != nil {
 			log.WithError(err).Println("fill tip by mixpay failed")
 		}
 
