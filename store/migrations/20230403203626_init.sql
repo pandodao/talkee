@@ -16,7 +16,7 @@ CREATE TABLE "sites" (
 );
 
 CREATE INDEX idx_site_user ON "sites" USING BTREE("user_id", "deleted_at");
-CREATE INDEX uidx_site_origin ON "sites" USING BTREE("origins", "deleted_at");
+CREATE INDEX idx_site_origin ON "sites" USING BTREE("origins", "deleted_at");
 
 CREATE TABLE "comments" (
   "id" BIGSERIAL PRIMARY KEY,
