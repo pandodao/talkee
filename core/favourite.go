@@ -60,7 +60,7 @@ type (
 		// 		NOW(),
 		// 		NOW()
 		// 	)
-		// ON CONFLICT ("comment_id", "user_id") DO
+		// ON CONFLICT ("comment_id", "user_id", "deleted_at") DO
 		// 	UPDATE
 		// 	SET "deleted_at" = NULL, "updated_at" = NOW()
 		// ;
