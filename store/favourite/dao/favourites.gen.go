@@ -207,7 +207,7 @@ func (f favouriteDo) CountAllFavourites(ctx context.Context) (result uint64, err
 //		NOW()
 //	)
 //
-// ON CONFLICT ("comment_id", "user_id") DO
+// ON CONFLICT ("comment_id", "user_id", "deleted_at") DO
 //
 //	UPDATE
 //	SET "deleted_at" = NULL, "updated_at" = NOW()
@@ -219,7 +219,7 @@ func (f favouriteDo) CreateFavourite(ctx context.Context, userID uint64, comment
 	var generateSQL strings.Builder
 	params = append(params, commentID)
 	params = append(params, userID)
-	generateSQL.WriteString("INSERT INTO \"favourites\" ( \"comment_id\", \"user_id\", \"created_at\", \"updated_at\" ) VALUES ( ?, ?, NOW(), NOW() ) ON CONFLICT (\"comment_id\", \"user_id\") DO UPDATE SET \"deleted_at\" = NULL, \"updated_at\" = NOW() ; ")
+	generateSQL.WriteString("INSERT INTO \"favourites\" ( \"comment_id\", \"user_id\", \"created_at\", \"updated_at\" ) VALUES ( ?, ?, NOW(), NOW() ) ON CONFLICT (\"comment_id\", \"user_id\", \"deleted_at\") DO UPDATE SET \"deleted_at\" = NULL, \"updated_at\" = NOW() ; ")
 
 	var executeSQL *gorm.DB
 	executeSQL = f.UnderlyingDB().Exec(generateSQL.String(), params...) // ignore_security_alert
